@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 
 const userRoutes = require("./Routes/User.Route");
 const productRoutes = require("./Routes/Product.Route");
+const cartRoutes = require("./Routes/Cart.Route");
 const errorHandler = require("./Middleware/ErrorMiddleware");
 
 const app = express();
@@ -24,6 +25,8 @@ app.use(
 
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes); 
+
 app.get('/', (req, res) => {
     res.send('hell0 world');
 });
@@ -44,3 +47,5 @@ mongoose
   .catch((err) => {
     console.error("Error connecting to MongoDB:", err.message);
   });
+
+
