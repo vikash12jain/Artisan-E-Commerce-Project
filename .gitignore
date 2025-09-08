@@ -1,0 +1,55 @@
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node modules
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Vite
+.vite/
+
+# Dependency directories
+.pnp/
+.pnp.js
+
+# IDE and system files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# VSCode settings
+.vscode/
+
+# Optional eslint cache
+.eslintcache
+
+# Tailwind JIT cache
+.tailwind/
+
+# Production files
+*.tgz
+
+# Coverage directory used by testing tools
+coverage/
+
+# Firebase files (if using emulator or config)
+.firebase/
+
+# React-specific
+*.env.production
+*.env.development
+
+# Misc
+*.sublime-workspace
+*.sublime-project
+*.swp
