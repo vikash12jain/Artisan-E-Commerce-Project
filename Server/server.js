@@ -24,10 +24,14 @@ app.use(
 
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
-
+app.get('/', (req, res) => {
+    res.send('hell0 world');
+});
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
+
+
 
 mongoose
   .connect(process.env.MONGO_URL)

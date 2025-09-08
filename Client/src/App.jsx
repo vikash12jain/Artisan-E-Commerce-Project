@@ -1,18 +1,19 @@
 import { useState, useEffect } from 'react';
 
 // API base URL for our backend server
-const API_BASE_URL = 'http://localhost:4000/api';
+// const API_BASE_URL = 'http://localhost:4000/api';
 
-// Sample product data will be replaced by API call
-const sampleProducts = [
-    { _id: '1', name: 'Handcrafted Mug', price: 24.99, category: 'Pottery' },
-    { _id: '2', name: 'Woven Scarf', price: 45.00, category: 'Textiles' },
-    { _id: '3', name: 'Silver Ring', price: 79.50, category: 'Jewelry' },
-    { _id: '4', name: 'Wooden Bowl', price: 32.75, category: 'Woodworks' },
-    { _id: '5', name: 'Ceramic Vase', price: 55.00, category: 'Pottery' },
-    { _id: '6', name: 'Leather Journal', price: 68.00, category: 'Stationery' },
-    { _id: '7', name: 'Glass Pendant', price: 95.00, category: 'Jewelry' },
-    { _id: '8', name: 'Embroidered Pillow', price: 42.00, category: 'Home Decor' },
+const initialProducts = [
+    { _id: '1', name: 'Hand-Carved Wooden Bowl', price: 45.00, category: 'Woodworks' },
+    { _id: '2', name: 'Ceramic Coffee Mug', price: 25.00, category: 'Pottery' },
+    { _id: '3', name: 'Woven Blanket', price: 120.00, category: 'Textiles' },
+    { _id: '4', name: 'Sterling Silver Ring', price: 85.00, category: 'Jewelry' },
+    { _id: '5', name: 'Leather Journal', price: 60.00, category: 'Leather Goods' },
+    { _id: '6', name: 'Embroidered Pillow', price: 55.00, category: 'Textiles' },
+    { _id: '7', name: 'Forged Iron Candlestick', price: 75.00, category: 'Metalwork' },
+    { _id: '8', name: 'Blown Glass Vase', price: 150.00, category: 'Glassware' },
+    { _id: '9', name: 'Macrame Wall Hanging', price: 90.00, category: 'Textiles' },
+    { _id: '10', name: 'Hand-Painted Scarf', price: 50.00, category: 'Textiles' }
 ];
 
 const ProductCard = ({ product, addToCart }) => (
@@ -40,36 +41,126 @@ const ProductCard = ({ product, addToCart }) => (
     </div>
 );
 
-const HomePage = ({ products, isLoading, setCurrentPage, addToCart }) => (
-    <main className="flex-grow container mx-auto p-8">
-        <div className="text-center my-8">
-            <h1 className="text-4xl font-bold text-gray-800">Welcome to Artisan Crafts</h1>
-            <p className="mt-2 text-lg text-gray-600">Explore our amazing handcrafted goods!</p>
+const SearchModal = ({ products, onClose, addToCart }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const filteredProducts = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return (
+        <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-75 flex items-start justify-center p-4 overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-8">
+                <div className="p-4 border-b flex justify-between items-center">
+                    <input
+                        type="text"
+                        placeholder="Search for products..."
+                        className="w-full p-2 text-lg rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        autoFocus
+                    />
+                    <button onClick={onClose} className="p-2 ml-4 text-gray-500 hover:text-gray-700 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div className="p-4 max-h-[70vh] overflow-y-auto">
+                    {searchTerm.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredProducts.length > 0 ? (
+                                filteredProducts.map(product => (
+                                    <div key={product._id} className="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center">
+                                        <img src={`https://placehold.co/150x150/a855f7/ffffff?text=${product.name.replace(/ /g, '+')}`} alt={product.name} className="w-24 h-24 object-cover rounded-md mb-2" />
+                                        <h4 className="font-semibold text-gray-800 truncate w-full">{product.name}</h4>
+                                        <p className="text-gray-500">${product.price.toFixed(2)}</p>
+                                        <button onClick={() => { addToCart(product); onClose(); }} className="mt-2 bg-stone-800 text-amber-100 font-medium py-1 px-3 rounded-full hover:bg-stone-700 transition-colors text-sm">Add to Cart</button>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="col-span-full text-center text-gray-500">No products found.</p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
+    );
+};
 
-        <section className="my-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">New Arrivals</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {isLoading ? (
-                    <p className="text-center col-span-full text-gray-500">Loading products...</p>
-                ) : (
-                    products.slice(0, 4).map(product => <ProductCard key={product._id} product={product} addToCart={addToCart} />)
-                )}
-            </div>
-        </section>
+const HomePage = ({ products, isLoading, setCurrentPage, addToCart }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [sortOrder, setSortOrder] = useState('none');
 
-        <section className="my-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">Top Selling</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {isLoading ? (
-                    <p className="text-center col-span-full text-gray-500">Loading products...</p>
-                ) : (
-                    products.slice(4, 8).map(product => <ProductCard key={product._id} product={product} addToCart={addToCart} />)
-                )}
+    const allCategories = ['All', ...new Set(products.map(product => product.category))];
+
+    const filteredAndSortedProducts = products
+        .filter(product => {
+            const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        })
+        .sort((a, b) => {
+            if (sortOrder === 'lowToHigh') {
+                return a.price - b.price;
+            }
+            if (sortOrder === 'highToLow') {
+                return b.price - a.price;
+            }
+            return 0;
+        });
+
+    return (
+        <main className="flex-grow container mx-auto p-8">
+            <div className="text-center my-8">
+                <h1 className="text-4xl font-bold text-gray-800">Welcome to Artisan Crafts</h1>
+                <p className="mt-2 text-lg text-gray-600">Explore our amazing handcrafted goods!</p>
             </div>
-        </section>
-    </main>
-);
+
+            <div className="flex flex-col md:flex-row items-center justify-between my-8 space-y-4 md:space-y-0 md:space-x-4">
+                <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full md:w-1/3 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                />
+                <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full md:w-1/3 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                >
+                    {allCategories.map(category => (
+                        <option key={category} value={category}>{category}</option>
+                    ))}
+                </select>
+                <select
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value)}
+                    className="w-full md:w-1/3 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                >
+                    <option value="none">Sort by Price</option>
+                    <option value="lowToHigh">Price: Low to High</option>
+                    <option value="highToLow">Price: High to Low</option>
+                </select>
+            </div>
+
+            <section className="my-16">
+                <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">All Products</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {isLoading ? (
+                        <p className="text-center col-span-full text-gray-500">Loading products...</p>
+                    ) : filteredAndSortedProducts.length > 0 ? (
+                        filteredAndSortedProducts.map(product => <ProductCard key={product._id} product={product} addToCart={addToCart} />)
+                    ) : (
+                        <p className="text-center col-span-full text-gray-500">No products found.</p>
+                    )}
+                </div>
+            </section>
+        </main>
+    );
+};
 
 const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart }) => {
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -230,29 +321,7 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setAuthError('');
-        try {
-            const response = await fetch(`${API_BASE_URL}/users/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Login failed.');
-            }
-
-            const data = await response.json();
-            localStorage.setItem('authToken', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            setUser(data.user);
-            setAuthToken(data.token);
-            setCurrentPage('home');
-        } catch (error) {
-            setAuthError(error.message);
-            console.error("Login failed:", error);
-        }
+        setAuthError('Error: This is a demo. User authentication is not active in this version.');
     };
 
     return (
@@ -289,29 +358,7 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setAuthError('');
-        try {
-            const response = await fetch(`${API_BASE_URL}/users/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ fullName, email, password }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Registration failed.');
-            }
-
-            const data = await response.json();
-            localStorage.setItem('authToken', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            setUser(data.user);
-            setAuthToken(data.token);
-            setCurrentPage('home');
-        } catch (error) {
-            setAuthError(error.message);
-            console.error("Registration failed:", error);
-        }
+        setAuthError('Error: This is a demo. User authentication is not active in this version.');
     };
 
     return (
@@ -321,11 +368,11 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fullname">First Name</label>
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="fullname" type="text" placeholder="First Name" value={fullName.firstname} onChange={(e) => setFullName({...fullName, firstname: e.target.value })} />
+                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="fullname" type="text" placeholder="First Name" value={fullName.firstname} onChange={(e) => setFullName({ ...fullName, firstname: e.target.value })} />
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="lastname">Last Name</label>
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="lastname" type="text" placeholder="Last Name" value={fullName.lastname} onChange={(e) => setFullName({...fullName, lastname: e.target.value })} />
+                        <input className="shadow appearance-none border rounded-lg w-full w-full py-2 px-3 text-gray-700" id="lastname" type="text" placeholder="Last Name" value={fullName.lastname} onChange={(e) => setFullName({ ...fullName, lastname: e.target.value })} />
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
@@ -357,33 +404,7 @@ const ProfilePage = ({ user, authToken, setAuthError }) => {
 
     const handleUpdate = async (event) => {
         event.preventDefault();
-        setIsLoading(true);
-        setMessage('');
-        try {
-            const response = await fetch(`${API_BASE_URL}/users/profile`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${authToken}`
-                },
-                body: JSON.stringify({ fullName, email }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Profile update failed.');
-            }
-
-            const data = await response.json();
-            localStorage.setItem('user', JSON.stringify(data.user));
-            setMessage('Profile updated successfully!');
-        } catch (error) {
-            setAuthError(error.message);
-            setMessage('Failed to update profile.');
-            console.error("Profile update failed:", error);
-        } finally {
-            setIsLoading(false);
-        }
+        setMessage('Error: This is a demo. Profile updates are not active in this version.');
     };
 
     return (
@@ -398,7 +419,7 @@ const ProfilePage = ({ user, authToken, setAuthError }) => {
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="lastname">Last Name</label>
-                            <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="lastname" type="text" value={fullName.lastname} onChange={(e) => setFullName({ ...fullName, lastname: e.target.value })} />
+                            <input className="shadow appearance-none border rounded-lg w-full w-full py-2 px-3 text-gray-700" id="lastname" type="text" value={fullName.lastname} onChange={(e) => setFullName({ ...fullName, lastname: e.target.value })} />
                         </div>
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
@@ -423,24 +444,161 @@ const ProfilePage = ({ user, authToken, setAuthError }) => {
     );
 };
 
+const AdminDashboardPage = ({ products, setProducts }) => {
+    const [formState, setFormState] = useState({ name: '', price: '', category: '' });
+    const [editingProduct, setEditingProduct] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [message, setMessage] = useState('');
+
+    const handleFormChange = (e) => {
+        setFormState({ ...formState, [e.target.name]: e.target.value });
+    };
+
+    const handleCreateUpdate = (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setMessage('');
+
+        const newProduct = { ...formState, _id: editingProduct ? editingProduct._id : `temp-${Date.now()}`, price: parseFloat(formState.price) };
+
+        if (editingProduct) {
+            setProducts(products.map(p => p._id === newProduct._id ? newProduct : p));
+            setMessage('Product updated successfully!');
+        } else {
+            setProducts([...products, newProduct]);
+            setMessage('Product created successfully!');
+        }
+
+        setFormState({ name: '', price: '', category: '' });
+        setEditingProduct(null);
+        setIsSubmitting(false);
+    };
+
+    const handleDelete = (productId) => {
+        if (window.confirm("Are you sure you want to delete this product?")) {
+            setProducts(products.filter(p => p._id !== productId));
+            setMessage('Product deleted successfully!');
+        }
+    };
+
+    const handleEditClick = (product) => {
+        setEditingProduct(product);
+        setFormState({
+            name: product.name,
+            price: product.price,
+            category: product.category,
+        });
+    };
+
+    return (
+        <main className="flex-grow container mx-auto p-8">
+            <h2 className="text-3xl font-bold text-center mb-8">Admin Dashboard</h2>
+
+            <div className="bg-white p-8 rounded-xl shadow-lg mb-8">
+                <h3 className="text-2xl font-bold mb-4">{editingProduct ? 'Edit Product' : 'Create New Product'}</h3>
+                <form onSubmit={handleCreateUpdate} className="space-y-4">
+                    <input
+                        className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                        type="text"
+                        name="name"
+                        placeholder="Product Name"
+                        value={formState.name}
+                        onChange={handleFormChange}
+                        required
+                    />
+                    <input
+                        className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                        type="number"
+                        name="price"
+                        placeholder="Price"
+                        value={formState.price}
+                        onChange={handleFormChange}
+                        step="0.01"
+                        required
+                    />
+                    <input
+                        className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                        type="text"
+                        name="category"
+                        placeholder="Category"
+                        value={formState.category}
+                        onChange={handleFormChange}
+                        required
+                    />
+                    {message && <p className={`text-sm text-center ${message.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}>{message}</p>}
+                    <div className="flex justify-between">
+                        <button
+                            type="submit"
+                            className="bg-stone-800 text-amber-100 font-bold py-2 px-4 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-50"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? 'Saving...' : editingProduct ? 'Update Product' : 'Create Product'}
+                        </button>
+                        {editingProduct && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setEditingProduct(null);
+                                    setFormState({ name: '', price: '', category: '' });
+                                }}
+                                className="bg-gray-500 text-white font-bold py-2 px-4 rounded-full hover:bg-gray-600 transition-colors"
+                            >
+                                Cancel Edit
+                            </button>
+                        )}
+                    </div>
+                </form>
+            </div>
+
+            <div className="bg-white p-8 rounded-xl shadow-lg">
+                <h3 className="text-2xl font-bold mb-4">All Products</h3>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {products.map((product) => (
+                                <tr key={product._id}>
+                                    <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                                    <td className="px-6 py-4 whitespace-now-rap">${product.price.toFixed(2)}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                        <button onClick={() => handleEditClick(product)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                        <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    );
+};
+
 const App = () => {
     const [currentPage, setCurrentPage] = useState('home');
-    const [products, setProducts] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [user, setUser] = useState(null);
+    const [products, setProducts] = useState(initialProducts);
+    const [isLoading, setIsLoading] = useState(false);
+    const [user, setUser] = useState({ fullName: { firstname: 'Demo', lastname: 'User' }, email: 'demo@example.com', isAdmin: true });
     const [cart, setCart] = useState([]);
-    const [authToken, setAuthToken] = useState(null);
+    const [authToken, setAuthToken] = useState('demo-token');
     const [authError, setAuthError] = useState('');
+    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
+    // This version of the app uses hardcoded data instead of a backend API.
+    // The previous error was caused by the app's attempt to connect to a backend
+    // server that was not available. This version is fully self-contained.
+    
     // Load user and token from localStorage on initial render
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        const storedToken = localStorage.getItem('authToken');
         const storedCart = localStorage.getItem('cart');
-        if (storedUser && storedToken) {
-            setUser(JSON.parse(storedUser));
-            setAuthToken(storedToken);
-        }
         if (storedCart) {
             setCart(JSON.parse(storedCart));
         }
@@ -451,29 +609,9 @@ const App = () => {
         localStorage.setItem('cart', JSON.stringify(cart));
     }, [cart]);
 
-    // Product Fetching
-    useEffect(() => {
-        const fetchProducts = async () => {
-            setIsLoading(true);
-            try {
-                const response = await fetch(`${API_BASE_URL}/products`);
-                if (!response.ok) throw new Error('Failed to fetch products');
-                const productsData = await response.json();
-                setProducts(productsData);
-            } catch (error) {
-                console.error("Failed to fetch products:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchProducts();
-    }, []);
-
     const handleLogout = () => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        setAuthToken(null);
         setUser(null);
+        setAuthToken(null);
         setCart([]);
         setCurrentPage('home');
     };
@@ -514,6 +652,8 @@ const App = () => {
                 return <RegisterPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} />;
             case 'profile':
                 return <ProfilePage user={user} authToken={authToken} setAuthError={setAuthError} />;
+            case 'admin-dashboard':
+                return <AdminDashboardPage products={products} setProducts={setProducts} authToken={authToken} setAuthError={setAuthError} />;
             case 'cart':
                 return <CartPage cart={cart} setCurrentPage={setCurrentPage} updateQuantity={updateQuantity} removeItem={removeItem} clearCart={clearCart} />;
             case 'checkout':
@@ -529,7 +669,7 @@ const App = () => {
                 <div className="container mx-auto px-4 flex justify-between items-center py-4">
                     <a href="#" onClick={() => setCurrentPage('home')} className="text-amber-100 text-2xl font-serif font-bold tracking-widest">ARTISAN</a>
                     <nav className='flex items-center space-x-6'>
-                        <button className='text-amber-100 border border-1 rounded-full px-4 py-1 flex items-center gap-2'>
+                        <button onClick={() => setIsSearchModalOpen(true)} className='text-amber-100 border border-1 rounded-full px-4 py-1 flex items-center gap-2'>
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
@@ -540,6 +680,7 @@ const App = () => {
                             {user ? (
                                 <>
                                     <li><button onClick={() => setCurrentPage('profile')} className="hover:text-amber-300 font-medium transition-colors">Profile</button></li>
+                                    {user.isAdmin && <li><button onClick={() => setCurrentPage('admin-dashboard')} className="hover:text-amber-300 font-medium transition-colors">Admin</button></li>}
                                     <li><button onClick={handleLogout} className="hover:text-amber-300 font-medium transition-colors">Logout</button></li>
                                 </>
                             ) : (
@@ -581,6 +722,7 @@ const App = () => {
                 </div>
             )}
             {renderPage()}
+            {isSearchModalOpen && <SearchModal products={products} onClose={() => setIsSearchModalOpen(false)} addToCart={addToCart} />}
 
             <footer className="bg-stone-900 text-amber-100 py-12 mt-auto">
                 <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
