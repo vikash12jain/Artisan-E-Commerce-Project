@@ -1,0 +1,19 @@
+const API_BASE = import.meta.env.VITE_API_URL;
+
+// --- USERS ---
+const REGISTER = `${API_BASE}/users/register`;
+const LOGIN = `${API_BASE}/users/login`;
+const PROFILE = `${API_BASE}/users/profile`;
+const LOGOUT = `${API_BASE}/users/logout`;
+
+// --- PRODUCTS ---
+const GET_ALL_PRODUCTS = `${API_BASE}/products`;
+const GET_PRODUCT = (id) => `${API_BASE}/products/${id}`;
+const CREATE_PRODUCT = `${API_BASE}/products`;
+const UPDATE_PRODUCT = (id) => `${API_BASE}/products/${id}`;
+const DELETE_PRODUCT = (id) => `${API_BASE}/products/${id}`;
+
+// --- CART ---
+const ADD_TO_CART = `${API_BASE}/cart/add`;
+const REMOVE_FROM_CART = (productId) => `${API_BASE}/cart/remove/${productId}`;
+const GET_CART = `${API_BASE}/cart`;

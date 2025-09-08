@@ -51,7 +51,7 @@ exports.registerUser = async (req, res) => {
 };
 
 exports.loginUser = async (req, res) => {
-    
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -64,18 +64,22 @@ exports.loginUser = async (req, res) => {
         const isPassowordMatched = await user.ComparePassword(password);
         if (user && isPassowordMatched) {
             const token = generateToken(user._id);
-
             res.cookie('token', token, {
                 httpOnly: true,
-                maxAge: 86400
+                maxAge: 24 * 60 * 60 * 1000 //token stay till 24h
             });
 
             res.status(200).json({
-                message: 'Login successful',
-                _id: user._id,
-                fullname: user.fullname,
-                email: user.email,
-                isAdmin: user.isAdmin,
+                token,
+                user: {
+                    _id: user._id,
+                    email: user.email,
+                    fullname: {
+                        firstname: user.fullname.firstname,
+                        lastname: user.fullname.lastname,
+                    },
+                    isAdmin: user.isAdmin
+                }
             });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
@@ -100,17 +104,24 @@ exports.userProfile = (req, res) => {
 };
 
 exports.logoutUser = async (req, res) => {
-    try {
-       
-        const token = req.cookies.token || req.headers.authorization.split(" ")[1];
+  try {
+    let token;
 
-        await BlacklistToken.create({ token }); // to remove/blacklist the token so this token never used again
-  
-        res.clearCookie('token');
-
-        res.status(200).json({ message: 'User logged out successfully' });
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ message: 'Something went wrong' });
+    if (req.cookies?.token) {
+      token = req.cookies.token;
+    } else if (req.headers?.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
     }
+
+    if (token) {
+      await BlacklistToken.create({ token });
+    }
+
+    res.clearCookie("token");
+    return res.status(200).json({ message: "User logged out successfully" });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ message: "Something went wrong" });
+  }
 };
+

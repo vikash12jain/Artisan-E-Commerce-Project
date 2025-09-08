@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 
-// API base URL for our backend server
-// const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const initialProducts = [
     { _id: '1', name: 'Hand-Carved Wooden Bowl', price: 45.00, category: 'Woodworks' },
@@ -316,12 +315,44 @@ const CheckoutPage = ({ cart, setCurrentPage, clearCart }) => {
 };
 
 const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setAuthError('Error: This is a demo. User authentication is not active in this version.');
+        setAuthError(""); // clear old errors
+
+        try {
+            const response = await fetch(`${API_BASE}/users/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+                credentials: 'include',
+            });
+
+            const data = await response.json();
+            console.log('LOGIN response:', response.status, data);
+
+            if (!response.ok) {
+                throw new Error(data.message || "Login failed");
+            }
+            if (!data.token) {
+                throw new Error('Server did not return a token');
+            }
+            // Save token + user to localStorage
+            localStorage.setItem("authToken", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+
+            // Update state
+            setUser(data.user);
+            setAuthToken(data.token);
+            setCurrentPage("home");
+
+        } catch (error) {
+            console.error("Login failed:", error);
+            setAuthError(error.message);
+        }
+
     };
 
     return (
@@ -330,18 +361,51 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
                 <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="email" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <label
+                            className="block text-gray-700 text-sm font-bold mb-2"
+                            htmlFor="email"
+                        >
+                            Email
+                        </label>
+                        <input
+                            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                            id="email"
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
                     </div>
                     <div className="mb-6">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label>
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="password" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <label
+                            className="block text-gray-700 text-sm font-bold mb-2"
+                            htmlFor="password"
+                        >
+                            Password
+                        </label>
+                        <input
+                            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                            id="password"
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
                     </div>
                     <div className="flex items-center justify-between">
-                        <button className="bg-stone-800 hover:bg-stone-700 text-amber-100 font-bold py-2 px-4 rounded-full" type="submit">
+                        <button
+                            className="bg-stone-800 hover:bg-stone-700 text-amber-100 font-bold py-2 px-4 rounded-full"
+                            type="submit"
+                        >
                             Sign In
                         </button>
-                        <button onClick={() => setCurrentPage('register')} type="button" className="font-bold text-sm text-stone-800 hover:text-stone-600">
+                        <button
+                            onClick={() => setCurrentPage("register")}
+                            type="button"
+                            className="font-bold text-sm text-stone-800 hover:text-stone-600"
+                        >
                             Create an account
                         </button>
                     </div>
@@ -352,13 +416,48 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
 };
 
 const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
-    const [fullName, setFullName] = useState({ firstname: '', lastname: '' });
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [fullName, setFullName] = useState({ firstname: "", lastname: "" });
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setAuthError('Error: This is a demo. User authentication is not active in this version.');
+        setAuthError(""); // clear old errors
+
+        try {
+            const response = await fetch(`${API_BASE}/users/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fullname: {
+                        firstname: fullName.firstname,
+                        lastname: fullName.lastname
+                    },
+                    email,
+                    password,
+                }),
+            });
+
+            const data = await response.json();
+            console.log("Backend response:", data);
+            //   if (!response.ok || data.error || data.message) {
+            if (!response.ok) {
+                throw new Error(data.message || "Registration failed");
+            }
+            if (!data.token) throw new Error('Server did not return a token');
+
+            // Save token + user to localStorage
+            localStorage.setItem("authToken", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+
+            // Update state
+            setUser(data.user);
+            setAuthToken(data.token);
+            setCurrentPage("home");
+        } catch (error) {
+            console.error("Registration failed:", error);
+            setAuthError(error.message);
+        }
     };
 
     return (
@@ -367,26 +466,89 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
                 <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fullname">First Name</label>
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="fullname" type="text" placeholder="First Name" value={fullName.firstname} onChange={(e) => setFullName({ ...fullName, firstname: e.target.value })} />
+                        <label
+                            className="block text-gray-700 text-sm font-bold mb-2"
+                            htmlFor="firstname"
+                        >
+                            First Name
+                        </label>
+                        <input
+                            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                            id="firstname"
+                            type="text"
+                            placeholder="First Name"
+                            value={fullName.firstname}
+                            onChange={(e) =>
+                                setFullName({ ...fullName, firstname: e.target.value })
+                            }
+                            required
+                        />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="lastname">Last Name</label>
-                        <input className="shadow appearance-none border rounded-lg w-full w-full py-2 px-3 text-gray-700" id="lastname" type="text" placeholder="Last Name" value={fullName.lastname} onChange={(e) => setFullName({ ...fullName, lastname: e.target.value })} />
+                        <label
+                            className="block text-gray-700 text-sm font-bold mb-2"
+                            htmlFor="lastname"
+                        >
+                            Last Name
+                        </label>
+                        <input
+                            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                            id="lastname"
+                            type="text"
+                            placeholder="Last Name"
+                            value={fullName.lastname}
+                            onChange={(e) =>
+                                setFullName({ ...fullName, lastname: e.target.value })
+                            }
+                            required
+                        />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="email" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <label
+                            className="block text-gray-700 text-sm font-bold mb-2"
+                            htmlFor="email"
+                        >
+                            Email
+                        </label>
+                        <input
+                            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                            id="email"
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
                     </div>
                     <div className="mb-6">
-                        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Password</label>
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="password" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <label
+                            className="block text-gray-700 text-sm font-bold mb-2"
+                            htmlFor="password"
+                        >
+                            Password
+                        </label>
+                        <input
+                            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                            id="password"
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
                     </div>
                     <div className="flex items-center justify-between">
-                        <button className="bg-stone-800 hover:bg-stone-700 text-amber-100 font-bold py-2 px-4 rounded-full" type="submit">
+                        <button
+                            className="bg-stone-800 hover:bg-stone-700 text-amber-100 font-bold py-2 px-4 rounded-full"
+                            type="submit"
+                        >
                             Register
                         </button>
-                        <button onClick={() => setCurrentPage('login')} type="button" className="font-bold text-sm text-stone-800 hover:text-stone-600">
+                        <button
+                            onClick={() => setCurrentPage("login")}
+                            type="button"
+                            className="font-bold text-sm text-stone-800 hover:text-stone-600"
+                        >
                             Already have an account?
                         </button>
                     </div>
@@ -396,15 +558,61 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
     );
 };
 
-const ProfilePage = ({ user, authToken, setAuthError }) => {
-    const [fullName, setFullName] = useState(user?.fullName || { firstname: '', lastname: '' });
-    const [email, setEmail] = useState(user?.email || '');
+
+
+const ProfilePage = ({ user, authToken, setAuthError, setUser }) => {
+    const [fullName, setFullName] = useState(
+        user?.fullName || { firstname: "", lastname: "" }
+    );
+    const [email] = useState(user?.email || "");
     const [isLoading, setIsLoading] = useState(false);
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState("");
 
     const handleUpdate = async (event) => {
         event.preventDefault();
-        setMessage('Error: This is a demo. Profile updates are not active in this version.');
+        setMessage("");
+        setAuthError("");
+        setIsLoading(true);
+
+        try {
+            const response = await fetch(`${API_BASE}/users/profile`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${authToken}`,
+                },
+                body: JSON.stringify({
+                    firstname: fullName.firstname,
+                    lastname: fullName.lastname,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || data.error || data.message) {
+                throw new Error(data.message || "Profile update failed");
+            }
+
+            // Update user in localStorage + state
+            const updatedUser = { ...user, fullName: data.fullName || fullName };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            setUser(updatedUser);
+
+            setMessage("Profile updated successfully!");
+        } catch (error) {
+            console.error("Profile update failed:", error);
+            setAuthError(error.message);
+            setMessage(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+
+
+
+
+
+
+
     };
 
     return (
@@ -414,25 +622,73 @@ const ProfilePage = ({ user, authToken, setAuthError }) => {
                 {user ? (
                     <form onSubmit={handleUpdate}>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="fullname">First Name</label>
-                            <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="fullname" type="text" value={fullName.firstname} onChange={(e) => setFullName({ ...fullName, firstname: e.target.value })} />
+                            <label
+                                className="block text-gray-700 text-sm font-bold mb-2"
+                                htmlFor="firstname"
+                            >
+                                First Name
+                            </label>
+                            <input
+                                className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                                id="firstname"
+                                type="text"
+                                value={fullName.firstname}
+                                onChange={(e) =>
+                                    setFullName({ ...fullName, firstname: e.target.value })
+                                }
+                                required
+                            />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="lastname">Last Name</label>
-                            <input className="shadow appearance-none border rounded-lg w-full w-full py-2 px-3 text-gray-700" id="lastname" type="text" value={fullName.lastname} onChange={(e) => setFullName({ ...fullName, lastname: e.target.value })} />
+                            <label
+                                className="block text-gray-700 text-sm font-bold mb-2"
+                                htmlFor="lastname"
+                            >
+                                Last Name
+                            </label>
+                            <input
+                                className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                                id="lastname"
+                                type="text"
+                                value={fullName.lastname}
+                                onChange={(e) =>
+                                    setFullName({ ...fullName, lastname: e.target.value })
+                                }
+                                required
+                            />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Email</label>
-                            <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" id="email" type="email" value={email} disabled />
+                            <label
+                                className="block text-gray-700 text-sm font-bold mb-2"
+                                htmlFor="email"
+                            >
+                                Email
+                            </label>
+                            <input
+                                className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
+                                id="email"
+                                type="email"
+                                value={email}
+                                disabled
+                            />
                         </div>
-                        {message && <p className={`text-sm text-center mb-4 ${message.includes('successfully') ? 'text-green-500' : 'text-red-500'}`}>{message}</p>}
+                        {message && (
+                            <p
+                                className={`text-sm text-center mb-4 ${message.includes("successfully")
+                                    ? "text-green-500"
+                                    : "text-red-500"
+                                    }`}
+                            >
+                                {message}
+                            </p>
+                        )}
                         <div className="flex items-center justify-center">
                             <button
                                 type="submit"
                                 className="bg-stone-800 hover:bg-stone-700 text-amber-100 font-bold py-2 px-4 rounded-full disabled:opacity-50"
                                 disabled={isLoading}
                             >
-                                {isLoading ? 'Updating...' : 'Update Profile'}
+                                {isLoading ? "Updating..." : "Update Profile"}
                             </button>
                         </div>
                     </form>
@@ -443,6 +699,7 @@ const ProfilePage = ({ user, authToken, setAuthError }) => {
         </main>
     );
 };
+
 
 const AdminDashboardPage = ({ products, setProducts }) => {
     const [formState, setFormState] = useState({ name: '', price: '', category: '' });
@@ -586,16 +843,61 @@ const App = () => {
     const [currentPage, setCurrentPage] = useState('home');
     const [products, setProducts] = useState(initialProducts);
     const [isLoading, setIsLoading] = useState(false);
-    const [user, setUser] = useState({ fullName: { firstname: 'Demo', lastname: 'User' }, email: 'demo@example.com', isAdmin: true });
+    const [user, setUser] = useState(null);
     const [cart, setCart] = useState([]);
-    const [authToken, setAuthToken] = useState('demo-token');
+    const [authToken, setAuthToken] = useState(null);
     const [authError, setAuthError] = useState('');
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
     // This version of the app uses hardcoded data instead of a backend API.
     // The previous error was caused by the app's attempt to connect to a backend
     // server that was not available. This version is fully self-contained.
-    
+
+useEffect(() => {
+  const storedUser = localStorage.getItem('user');
+  const storedToken = localStorage.getItem('authToken');
+
+  if (!storedToken || !storedUser) {
+    setUser(null);
+    setAuthToken(null);
+    return;
+  }
+
+  // Optimistically set user/token while validating
+  setUser(JSON.parse(storedUser));
+  setAuthToken(storedToken);
+
+  (async () => {
+    try {
+      const res = await fetch(`${API_BASE}/users/profile`, {
+        headers: { Authorization: `Bearer ${storedToken}` }
+      });
+
+      if (!res.ok) {
+        // invalid/expired token
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        setUser(null);
+        setAuthToken(null);
+        return;
+      }
+
+      const data = await res.json();
+      // sync user with server response (server may return user)
+      const serverUser = data.user || data;
+      setUser(serverUser);
+      localStorage.setItem('user', JSON.stringify(serverUser));
+    } catch (err) {
+      console.error('Token validation failed:', err);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      setUser(null);
+      setAuthToken(null);
+    }
+  })();
+}, []);
+
+
     // Load user and token from localStorage on initial render
     useEffect(() => {
         const storedCart = localStorage.getItem('cart');
@@ -609,12 +911,33 @@ const App = () => {
         localStorage.setItem('cart', JSON.stringify(cart));
     }, [cart]);
 
-    const handleLogout = () => {
-        setUser(null);
-        setAuthToken(null);
-        setCart([]);
-        setCurrentPage('home');
-    };
+  const handleLogout = async () => {
+  try {
+    // (optional) tell backend to blacklist token
+    const token = localStorage.getItem("authToken");
+    await fetch(`${API_BASE}/users/logout`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      // credentials: "include", // only if you are using cookies
+    });
+  } catch (err) {
+    console.error("Logout request failed:", err);
+  }
+
+  // clear client storage
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("user");
+
+  // reset app state
+  setUser(null);
+  setAuthToken(null);
+  setCart([]);
+  setCurrentPage("home");
+};
+
 
     const addToCart = (product) => {
         const existingItem = cart.find(item => item._id === product._id);
