@@ -32,6 +32,15 @@ exports.createProduct = asyncHandler(async (req, res) => {
 });
 
 exports.getAllProducts = asyncHandler(async (req, res) => {
+  const { category, minPrice, maxPrice, search } = req.query;
+  let filter = {};
+  if (category) filter.category = category;
+  if (search) filter.name = { $regex: search, $options: 'i' };
+  if (minPrice || maxPrice) {
+    filter.price = {};
+    if (minPrice) filter.price.$gte = Number(minPrice);
+    if (maxPrice) filter.price.$lte = Number(maxPrice);
+  }
   const products = await Product.find().sort("-createdAt");
   res.status(200).json(products);
 });
