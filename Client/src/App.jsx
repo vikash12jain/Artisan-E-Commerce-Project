@@ -7,85 +7,100 @@ const API_BASE = import.meta.env.VITE_API_URL;
 
 const ProductCard = ({ product, addToCart, onOpen }) => {
     return (
-    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-        <div
-            className="w-full h-64 overflow-hidden cursor-pointer"
-            onClick={() => onOpen && onOpen(product._id)}
-        >
-            <img src={
-                product.image ||
-                `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
-                    product.name || "Product"
-                )}`
-            } alt={product.name} className="w-full h-full object-cover" />
-        </div>
-        <div className="p-4">
-            <p className="text-gray-500 text-sm mt-1">{product.category}</p>
-            <h3 onClick={() => onOpen && onOpen(product._id)} className="text-lg font-semibold text-gray-800 mt-2 cursor-pointer">{product.name}</h3>
-            <div className="flex items-center justify-between mt-4">
-                <span className="text-xl font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
-                <button onClick={() => addToCart(product)} className="bg-stone-800 text-amber-100 font-medium py-2 px-4 rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md">
-                    Add to Cart
-                </button>
+        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+            <div
+                className="w-full h-64 overflow-hidden cursor-pointer"
+                onClick={() => onOpen && onOpen(product._id)}
+            >
+                <img src={
+                    product.image ||
+                    `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
+                        product.name || "Product"
+                    )}`
+                } alt={product.name} className="w-full h-full object-cover" />
+            </div>
+            <div className="p-4">
+                <p className="text-gray-500 text-sm mt-1">{product.category}</p>
+                <h3 onClick={() => onOpen && onOpen(product._id)} className="text-lg font-semibold text-gray-800 mt-2 cursor-pointer">{product.name}</h3>
+                <div className="flex items-center justify-between mt-4">
+                    <span className="text-xl font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
+                    <button onClick={() => addToCart(product)} className="bg-stone-800 text-amber-100 font-medium py-2 px-4 rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md">
+                        Add to Cart
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-);}
+    );
+}
 
 
-const SearchModal = ({ products, onClose, addToCart }) => {
+const SearchModal = ({ products, onClose, addToCart, onOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        document.body.style.overflow = 'hidden';
+        return () => { document.body.style.overflow = 'auto'; };
+    }, []);
+
+
     const filteredProducts = products.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
-        <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-75 flex items-start justify-center p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-8">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto" onScroll={(e) => e.stopPropagation()}>
+
+            <div className="bg-white rounded-xl w-full max-w-lg p-6 shadow-lg relative">
+
                 <div className="p-4 border-b flex justify-between items-center">
                     <input
                         type="text"
-                        placeholder="Search for products..."
-                        className="w-full p-2 text-lg rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                        placeholder="Search products..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         autoFocus
+                        className="w-full p-3 border border-gray-300 rounded-full mb-4 focus:outline-none focus:ring-2 focus:ring-stone-800"
                     />
-                    <button onClick={onClose} className="p-2 ml-4 text-gray-500 hover:text-gray-700 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+
+                    <button
+                        onClick={onClose}
+                        className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
+                    >
+                        ✖
                     </button>
+
                 </div>
-                <div className="p-4 max-h-[70vh] overflow-y-auto">
-                    {searchTerm.length > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredProducts.length > 0 ? (
-                                filteredProducts.map(product => (
-                                    <div key={product._id} className="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center">
-                                        <img src={
-                                            product.image ||
-                                            `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
-                                                product.name || "Product"
-                                            )}`
-                                        } alt={product.name} className="w-24 h-24 object-cover rounded-md mb-2" />
-                                        <h4 className="font-semibold text-gray-800 truncate w-full">{product.name}</h4>
-                                        <p className="text-gray-500">₹{product.price.toFixed(2)}</p>
-                                        <button onClick={() => { addToCart(product); onClose(); }} className="mt-2 bg-stone-800 text-amber-100 font-medium py-1 px-3 rounded-full hover:bg-stone-700 transition-colors text-sm">Add to Cart</button>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="col-span-full text-center text-gray-500">No products found.</p>
-                            )}
-                        </div>
+                <div className="max-h-80 overflow-y-auto">
+                    {filteredProducts.length > 0 ? (
+                        filteredProducts.map(product => (
+                            <div
+                                key={product._id}
+                                onClick={() => {
+                                    onClose();
+                                    onOpen(product._id);
+                                }}
+                                className="flex items-center gap-3 p-2 hover:bg-gray-100 cursor-pointer rounded-lg"
+                            >
+
+                                <img
+                                    src={product.image || `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(product.name)}`}
+                                    alt={product.name}
+                                    className="w-12 h-12 object-cover rounded-md border"
+                                />
+                                <span className="text-gray-800">{product.name}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-gray-500 text-center">No products found.</p>
                     )}
                 </div>
+
             </div>
         </div>
     );
 };
 
-const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen }) => {
+const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen, isSearchModalOpen, setIsSearchModalOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [sortOrder, setSortOrder] = useState('none');
@@ -116,13 +131,16 @@ const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen }) =>
             </div>
 
             <div className="flex flex-col md:flex-row items-center justify-between my-8 space-y-4 md:space-y-0 md:space-x-4">
-                <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full md:w-1/3 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
-                />
+                <button
+                    onClick={() => setIsSearchModalOpen(true)}
+                    className="w-full md:w-1/3 text-stone-800 border border-gray-300 rounded-full px-4 py-2 flex items-center justify-center gap-2 hover:bg-gray-100"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span>Search</span>
+                </button>
+
                 <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
@@ -155,6 +173,9 @@ const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen }) =>
                     )}
                 </div>
             </section>
+
+
+
         </main>
     );
 };
@@ -245,14 +266,14 @@ const CheckoutPage = ({ cart, setCurrentPage, clearCart }) => {
     const handlePlaceOrder = async (event) => {
         event.preventDefault();
         setIsPlacingOrder(true);
-      
+
         setTimeout(async () => {
             await clearCart();
             setIsPlacingOrder(false);
             setOrderPlaced(true);
             setTimeout(() => {
                 setCurrentPage('home');
-            }, 3000); 
+            }, 3000);
         }, 1500);
     };
 
@@ -323,7 +344,7 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setAuthError(""); 
+        setAuthError("");
 
         try {
             const response = await fetch(`${API_BASE}/users/login`, {
@@ -441,7 +462,7 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
 
             const data = await response.json();
             console.log("Backend response:", data);
-           
+
             if (!response.ok) {
                 throw new Error(data.message || "Registration failed");
             }
@@ -660,7 +681,7 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
                 await res.json();
                 setMessage('Product updated successfully!');
             } else {
-        
+
                 res = await fetch(`${API_BASE}/products`, {
                     method: 'POST',
                     credentials: 'include',
@@ -1353,7 +1374,7 @@ const App = () => {
     const renderPage = () => {
         switch (currentPage) {
             case 'home':
-                return <HomePage products={products} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} />;
+                return <HomePage products={products} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} isSearchModalOpen={isSearchModalOpen} setIsSearchModalOpen={setIsSearchModalOpen} />;
             case 'product':
                 return <ProductDetail id={currentProductId} addToCart={addToCart} setCurrentPage={setCurrentPage} />;
             case 'login':
@@ -1432,7 +1453,7 @@ const App = () => {
                 </div>
             )}
             {renderPage()}
-            {isSearchModalOpen && <SearchModal products={products} onClose={() => setIsSearchModalOpen(false)} addToCart={addToCart} />}
+            {isSearchModalOpen && <SearchModal products={products} onClose={() => setIsSearchModalOpen(false)} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} />}
 
             <footer className="bg-stone-900 text-amber-100 py-12 mt-auto">
                 <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
