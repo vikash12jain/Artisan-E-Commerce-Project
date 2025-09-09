@@ -22,7 +22,6 @@ exports.createProduct = asyncHandler(async (req, res) => {
     image,
     user: req.user._id, //it will get a user id ffrom req.user;
   });
-
   if (product) {
     res.status(201).json(product);
   } else {

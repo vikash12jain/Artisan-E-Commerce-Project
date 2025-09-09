@@ -4,40 +4,33 @@ import ProfilePage from '../Pages/Profile'
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
-// const initialProducts = [
-//     { _id: '1', name: 'Hand-Carved Wooden Bowl', price: 45.00, category: 'Woodworks' },
-//     { _id: '2', name: 'Ceramic Coffee Mug', price: 25.00, category: 'Pottery' },
-//     { _id: '3', name: 'Woven Blanket', price: 120.00, category: 'Textiles' },
-//     { _id: '4', name: 'Sterling Silver Ring', price: 85.00, category: 'Jewelry' },
-//     { _id: '5', name: 'Leather Journal', price: 60.00, category: 'Leather Goods' },
-//     { _id: '6', name: 'Embroidered Pillow', price: 55.00, category: 'Textiles' },
-//     { _id: '7', name: 'Forged Iron Candlestick', price: 75.00, category: 'Metalwork' },
-//     { _id: '8', name: 'Blown Glass Vase', price: 150.00, category: 'Glassware' },
-//     { _id: '9', name: 'Macrame Wall Hanging', price: 90.00, category: 'Textiles' },
-//     { _id: '10', name: 'Hand-Painted Scarf', price: 50.00, category: 'Textiles' }
-// ];
 
-
-const ProductCard = ({ product, addToCart, onOpen }) => (
-  <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-    <div
-      className="w-full h-64 overflow-hidden cursor-pointer"
-      onClick={() => onOpen && onOpen(product._id)}
-    >
-      <img src={`https://placehold.co/400x400/a855f7/ffffff?text=${product.name.replace(/ /g, '+')}`} alt={product.name} className="w-full h-full object-cover" />
+const ProductCard = ({ product, addToCart, onOpen }) => {
+    return (
+    <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+        <div
+            className="w-full h-64 overflow-hidden cursor-pointer"
+            onClick={() => onOpen && onOpen(product._id)}
+        >
+            <img src={
+                product.image ||
+                `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
+                    product.name || "Product"
+                )}`
+            } alt={product.name} className="w-full h-full object-cover" />
+        </div>
+        <div className="p-4">
+            <p className="text-gray-500 text-sm mt-1">{product.category}</p>
+            <h3 onClick={() => onOpen && onOpen(product._id)} className="text-lg font-semibold text-gray-800 mt-2 cursor-pointer">{product.name}</h3>
+            <div className="flex items-center justify-between mt-4">
+                <span className="text-xl font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
+                <button onClick={() => addToCart(product)} className="bg-stone-800 text-amber-100 font-medium py-2 px-4 rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md">
+                    Add to Cart
+                </button>
+            </div>
+        </div>
     </div>
-    <div className="p-4">
-      <p className="text-gray-500 text-sm mt-1">{product.category}</p>
-      <h3 onClick={() => onOpen && onOpen(product._id)} className="text-lg font-semibold text-gray-800 mt-2 cursor-pointer">{product.name}</h3>
-      <div className="flex items-center justify-between mt-4">
-        <span className="text-xl font-bold text-gray-800">${product.price.toFixed(2)}</span>
-        <button onClick={() => addToCart(product)} className="bg-stone-800 text-amber-100 font-medium py-2 px-4 rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md">
-          Add to Cart
-        </button>
-      </div>
-    </div>
-  </div>
-);
+);}
 
 
 const SearchModal = ({ products, onClose, addToCart }) => {
@@ -70,9 +63,14 @@ const SearchModal = ({ products, onClose, addToCart }) => {
                             {filteredProducts.length > 0 ? (
                                 filteredProducts.map(product => (
                                     <div key={product._id} className="bg-white rounded-lg shadow p-4 flex flex-col items-center text-center">
-                                        <img src={`https://placehold.co/150x150/a855f7/ffffff?text=${product.name.replace(/ /g, '+')}`} alt={product.name} className="w-24 h-24 object-cover rounded-md mb-2" />
+                                        <img src={
+                                            product.image ||
+                                            `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
+                                                product.name || "Product"
+                                            )}`
+                                        } alt={product.name} className="w-24 h-24 object-cover rounded-md mb-2" />
                                         <h4 className="font-semibold text-gray-800 truncate w-full">{product.name}</h4>
-                                        <p className="text-gray-500">${product.price.toFixed(2)}</p>
+                                        <p className="text-gray-500">₹{product.price.toFixed(2)}</p>
                                         <button onClick={() => { addToCart(product); onClose(); }} className="mt-2 bg-stone-800 text-amber-100 font-medium py-1 px-3 rounded-full hover:bg-stone-700 transition-colors text-sm">Add to Cart</button>
                                     </div>
                                 ))
@@ -87,7 +85,7 @@ const SearchModal = ({ products, onClose, addToCart }) => {
     );
 };
 
-const HomePage = ({ products, isLoading, setCurrentPage, addToCart }) => {
+const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [sortOrder, setSortOrder] = useState('none');
@@ -151,7 +149,7 @@ const HomePage = ({ products, isLoading, setCurrentPage, addToCart }) => {
                     {isLoading ? (
                         <p className="text-center col-span-full text-gray-500">Loading products...</p>
                     ) : filteredAndSortedProducts.length > 0 ? (
-                        filteredAndSortedProducts.map(product => <ProductCard key={product._id} product={product} addToCart={addToCart} />)
+                        filteredAndSortedProducts.map(product => <ProductCard key={product._id} product={product} addToCart={addToCart} onOpen={onOpen} />)
                     ) : (
                         <p className="text-center col-span-full text-gray-500">No products found.</p>
                     )}
@@ -180,11 +178,16 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart 
                         {cart.map(item => (
                             <div key={item._id} className="flex items-center bg-white p-4 rounded-xl shadow-sm">
                                 <div className="w-24 h-24 flex-shrink-0 mr-4">
-                                    <img src={`https://placehold.co/100x100/a855f7/ffffff?text=${item.name.replace(/ /g, '+')}`} alt={item.name} className="w-full h-full object-cover rounded-md" />
+                                    <img src={
+                                        item.image ||
+                                        `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
+                                            item.name || "Product"
+                                        )}`
+                                    } alt={item.name} className="w-full h-full object-cover rounded-md" />
                                 </div>
                                 <div className="flex-grow">
                                     <h3 className="font-semibold text-lg">{item.name}</h3>
-                                    <p className="text-gray-500">${item.price.toFixed(2)}</p>
+                                    <p className="text-gray-500">₹{item.price.toFixed(2)}</p>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <button onClick={() => updateQuantity(item._id, -1)} className="w-8 h-8 rounded-full bg-gray-200 text-gray-700">-</button>
@@ -205,13 +208,13 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart 
                             {cart.map(item => (
                                 <div key={item._id} className="flex justify-between">
                                     <span>{item.name} x{item.quantity}</span>
-                                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                                    <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                                 </div>
                             ))}
                         </div>
                         <div className="border-t border-gray-200 mt-4 pt-4 flex justify-between items-center text-lg font-bold">
                             <span>Total</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>₹{total.toFixed(2)}</span>
                         </div>
                         <div className="mt-6 flex flex-col space-y-4">
                             <button
@@ -242,14 +245,14 @@ const CheckoutPage = ({ cart, setCurrentPage, clearCart }) => {
     const handlePlaceOrder = async (event) => {
         event.preventDefault();
         setIsPlacingOrder(true);
-        // Simulate a checkout process with a delay
+      
         setTimeout(async () => {
             await clearCart();
             setIsPlacingOrder(false);
             setOrderPlaced(true);
             setTimeout(() => {
                 setCurrentPage('home');
-            }, 3000); // Redirect after 3 seconds
+            }, 3000); 
         }, 1500);
     };
 
@@ -273,12 +276,12 @@ const CheckoutPage = ({ cart, setCurrentPage, clearCart }) => {
                     {cart.map(item => (
                         <div key={item._id} className="flex justify-between items-center py-2 border-b">
                             <span>{item.name} x{item.quantity}</span>
-                            <span>${(item.price * item.quantity).toFixed(2)}</span>
+                            <span>₹{(item.price * item.quantity).toFixed(2)}</span>
                         </div>
                     ))}
                     <div className="flex justify-between items-center py-2 text-xl font-bold mt-4">
                         <span>Total</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>₹{total.toFixed(2)}</span>
                     </div>
                 </div>
 
@@ -320,7 +323,7 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setAuthError(""); // clear old errors
+        setAuthError(""); 
 
         try {
             const response = await fetch(`${API_BASE}/users/login`, {
@@ -339,11 +342,9 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
             if (!data.token) {
                 throw new Error('Server did not return a token');
             }
-            // Save token + user to localStorage
             localStorage.setItem("authToken", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
-            // Update state
             setUser(data.user);
             setAuthToken(data.token);
             setCurrentPage("home");
@@ -422,7 +423,7 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setAuthError(""); // clear old errors
+        setAuthError("");
 
         try {
             const response = await fetch(`${API_BASE}/users/register`, {
@@ -440,17 +441,13 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
 
             const data = await response.json();
             console.log("Backend response:", data);
-            //   if (!response.ok || data.error || data.message) {
+           
             if (!response.ok) {
                 throw new Error(data.message || "Registration failed");
             }
             if (!data.token) throw new Error('Server did not return a token');
-
-            // Save token + user to localStorage
             localStorage.setItem("authToken", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
-
-            // Update state
             setUser(data.user);
             setAuthToken(data.token);
             setCurrentPage("home");
@@ -567,7 +564,7 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
 
     const [localProducts, setLocalProducts] = useState(propProducts || []);
     const setGlobalProducts = typeof setPropProducts === 'function' ? setPropProducts : setLocalProducts;
-    const [error,setError] = useState('');
+    const [error, setError] = useState('');
 
     const [formState, setFormState] = useState({
         name: '',
@@ -582,15 +579,15 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
     });
 
     const categories = [
-            "Home & Living",
-            "Kitchen & Dining",
-            "Fashion & Accessories",
-            "Gifts & Collectibles",
-            "Wellness & Lifestyle",
-            "Art & Craft",
-            "Eco-friendly & Sustainable",
-            "Other"
-        ];
+        "Home & Living",
+        "Kitchen & Dining",
+        "Fashion & Accessories",
+        "Gifts & Collectibles",
+        "Wellness & Lifestyle",
+        "Art & Craft",
+        "Eco-friendly & Sustainable",
+        "Other"
+    ];
 
     const [editingProduct, setEditingProduct] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -650,7 +647,6 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
         try {
             let res;
             if (editingProduct) {
-                // Update
                 res = await fetch(`${API_BASE}/products/${editingProduct._id}`, {
                     method: 'PUT',
                     credentials: 'include',
@@ -661,10 +657,10 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
                     const errText = await res.text();
                     throw new Error(`Update failed: ${res.status} ${errText}`);
                 }
-                await res.json(); // optional usage
+                await res.json();
                 setMessage('Product updated successfully!');
             } else {
-                // Create
+        
                 res = await fetch(`${API_BASE}/products`, {
                     method: 'POST',
                     credentials: 'include',
@@ -678,11 +674,7 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
                 await res.json();
                 setMessage('Product created successfully!');
             }
-
-            // Refresh authoritative list from server
             await fetchProducts();
-
-            // reset form
             setFormState({ name: '', sku: '', brand: '', category: '', price: '', quantity: '', color: '', description: '', image: '' });
             setEditingProduct(null);
         } catch (err) {
@@ -692,8 +684,6 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
             setIsSubmitting(false);
         }
     };
-
-
     const handleDelete = async (productId) => {
         if (!window.confirm('Are you sure you want to delete this product?')) return;
         setIsSubmitting(true);
@@ -717,8 +707,6 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
             setIsSubmitting(false);
         }
     };
-
-
     const handleEditClick = (product) => {
         setEditingProduct(product);
         setFormState({
@@ -732,13 +720,8 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
             description: product.description || '',
             image: product.image || '',
         });
-
-        
-
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
-
-
     return (
         <main className="flex-grow container mx-auto p-8">
             <h2 className="text-3xl font-bold text-center mb-8">Admin Dashboard</h2>
@@ -798,7 +781,7 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
                             required
                             className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700"
                         />
-                   
+
                         <select
                             name="category"
                             value={formState.category}
@@ -884,199 +867,183 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
                         )}
                     </div>
                 </form>
-
-
-
-
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-lg">
                 <h3 className="text-2xl font-bold mb-4">All Products</h3>
-               
-<div className="bg-white p-8 rounded-xl shadow-lg">
-  <h3 className="text-2xl font-bold mb-4">All Products</h3>
 
-  {loading ? (
-    <p>Loading products...</p>
-  ) : (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-          </tr>
-        </thead>
+                <div className="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 className="text-2xl font-bold mb-4">All Products</h3>
 
-        <tbody className="bg-white divide-y divide-gray-200">
-          {localProducts.map((product) => (
-            <tr key={product._id}>
-              <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-              <td className="px-6 py-4 whitespace-nowrap">${Number(product.price || 0).toFixed(2)}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
-              <td className="px-6 py-4 whitespace-nowrap">{product.quantity ?? '-'}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                <button onClick={() => handleEditClick(product)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:text-red-900">Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )}
-</div>
+                    {loading ? (
+                        <p>Loading products...</p>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    </tr>
+                                </thead>
 
-
-
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {localProducts.map((product) => (
+                                        <tr key={product._id}>
+                                            <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">₹{Number(product.price || 0).toFixed(2)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">{product.quantity ?? '-'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                <button onClick={() => handleEditClick(product)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </div>
         </main>
     );
 };
 
-
-
-// we will need to add src/Pages/ProductDetail.jsx
 function ProductDetail({ id, addToCart, goBack = () => window.history.back(), setCurrentPage }) {
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (!id) {
-      setError("No product id provided");
-      setLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const res = await fetch(`${API_BASE}/products/${id}`, {
-          method: "GET",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-        });
-        if (!res.ok) {
-          const txt = await res.text().catch(() => "");
-          throw new Error(`Failed to load product (${res.status}) ${txt}`);
+    useEffect(() => {
+        if (!id) {
+            setError("No product id provided");
+            setLoading(false);
+            return;
         }
-        const data = await res.json();
-        // backend returns product directly (based on your controller), but handle { product: {...} } shape too
-        const p = data && (data._id ? data : data.product || data);
-        if (!cancelled) setProduct(p);
-      } catch (err) {
-        console.error("Product fetch error", err);
-        if (!cancelled) setError(err.message || "Failed to load product");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            setError("");
+            try {
+                const res = await fetch(`${API_BASE}/products/${id}`, {
+                    method: "GET",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                });
+                if (!res.ok) {
+                    const txt = await res.text().catch(() => "");
+                    throw new Error(`Failed to load product (${res.status}) ${txt}`);
+                }
+                const data = await res.json();
+                const p = data && (data._id ? data : data.product || data);
+                if (!cancelled) setProduct(p);
+            } catch (err) {
+                console.error("Product fetch error", err);
+                if (!cancelled) setError(err.message || "Failed to load product");
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
+        return () => {
+            cancelled = true;
+        };
+    }, [id]);
 
-  if (loading) return <div className="p-8">Loading product...</div>;
-  if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
-  if (!product) return <div className="p-8">No product found.</div>;
+    if (loading) return <div className="p-8">Loading product...</div>;
+    if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
+    if (!product) return <div className="p-8">No product found.</div>;
 
-  const available = (product.quantity ?? 0) - (product.sold ?? 0);
-  const inStock = available > 0;
+    const available = (product.quantity ?? 0) - (product.sold ?? 0);
+    const inStock = available > 0;
 
-  return (
-    <main className="flex-grow container mx-auto p-8">
-      <button
-        onClick={() => {
-          if (typeof setCurrentPage === "function") {
-            setCurrentPage("home");
-          } else {
-            goBack();
-          }
-        }}
-        className="mb-6 text-sm text-stone-800/80 hover:underline"
-      >
-        ← Back
-      </button>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-white p-8 rounded-xl shadow-lg">
-        <div className="lg:col-span-1">
-          <div className="w-full h-96 overflow-hidden rounded-lg">
-            <img
-              src={
-                product.image ||
-                `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
-                  product.name || "Product"
-                )}`
-              }
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-
-        <div className="lg:col-span-2 space-y-6">
-          <div>
-            <p className="text-sm text-gray-500">
-              {product.category} • {product.brand}
-            </p>
-            <h1 className="text-3xl font-bold mt-2">{product.name}</h1>
-            <p className="text-2xl font-extrabold text-stone-800 mt-4">${Number(product.price || 0).toFixed(2)}</p>
-            <p className={`mt-2 font-medium ${inStock ? "text-green-600" : "text-red-500"}`}>
-              {inStock ? `In stock — ${available} available` : "Out of stock"}
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Description</h3>
-            <p className="text-gray-700 whitespace-pre-line">{product.description}</p>
-          </div>
-
-          <div className="flex items-center gap-4 mt-4">
+    return (
+        <main className="flex-grow container mx-auto p-8">
             <button
-              className="bg-stone-800 text-amber-100 font-bold py-3 px-6 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-50"
-              disabled={!inStock}
-              onClick={() => addToCart(product)}
+                onClick={() => {
+                    if (typeof setCurrentPage === "function") {
+                        setCurrentPage("home");
+                    } else {
+                        goBack();
+                    }
+                }}
+                className="mb-6 text-sm text-stone-800/80 hover:underline"
             >
-              Add to Cart
+                ← Back
             </button>
 
-            <button
-              onClick={() => {
-                addToCart(product);
-                // navigate to checkout if you want:
-                if (typeof setCurrentPage === "function") setCurrentPage("checkout");
-              }}
-              className="py-3 px-5 border rounded-full"
-            >
-              Buy Now
-            </button>
-          </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-white p-8 rounded-xl shadow-lg">
+                <div className="lg:col-span-1">
+                    <div className="w-full h-96 overflow-hidden rounded-lg">
+                        <img
+                            src={
+                                product.image ||
+                                `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
+                                    product.name || "Product"
+                                )}`
+                            }
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                </div>
 
-          <div className="mt-4 text-sm text-gray-500">
-            <p>
-              <strong>SKU:</strong> {product.sku || "-"}
-            </p>
-            <p>
-              <strong>Sold:</strong> {product.sold ?? 0}
-            </p>
-            <p>
-              <strong>Category:</strong> {product.category || "-"}
-            </p>
-          </div>
-        </div>
-      </div>
-    </main>
-  );
+                <div className="lg:col-span-2 space-y-6">
+                    <div>
+                        <p className="text-sm text-gray-500">
+                            {product.category} • {product.brand}
+                        </p>
+                        <h1 className="text-3xl font-bold mt-2">{product.name}</h1>
+                        <p className="text-2xl font-extrabold text-stone-800 mt-4">₹{Number(product.price || 0).toFixed(2)}</p>
+                        <p className={`mt-2 font-medium ${inStock ? "text-green-600" : "text-red-500"}`}>
+                            {inStock ? `In stock — ${available} available` : "Out of stock"}
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 className="text-lg font-semibold mb-2">Description</h3>
+                        <p className="text-gray-700 whitespace-pre-line">{product.description}</p>
+                    </div>
+
+                    <div className="flex items-center gap-4 mt-4">
+                        <button
+                            className="bg-stone-800 text-amber-100 font-bold py-3 px-6 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-50"
+                            disabled={!inStock}
+                            onClick={() => addToCart(product)}
+                        >
+                            Add to Cart
+                        </button>
+
+                        <button
+                            onClick={() => {
+                                addToCart(product);
+                                if (typeof setCurrentPage === "function") setCurrentPage("checkout");
+                            }}
+                            className="py-3 px-5 border rounded-full"
+                        >
+                            Buy Now
+                        </button>
+                    </div>
+                    <div className="mt-4 text-sm text-gray-500">
+                        <p>
+                            <strong>SKU:</strong> {product.sku || "-"}
+                        </p>
+                        <p>
+                            <strong>Sold:</strong> {product.sold ?? 0}
+                        </p>
+                        <p>
+                            <strong>Category:</strong> {product.category || "-"}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    );
 }
-
-
 
 const App = () => {
     const [currentPage, setCurrentPage] = useState('home');
@@ -1087,10 +1054,7 @@ const App = () => {
     const [authToken, setAuthToken] = useState(null);
     const [authError, setAuthError] = useState('');
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-
-    // This version of the app uses hardcoded data instead of a backend API.
-    // The previous error was caused by the app's attempt to connect to a backend
-    // server that was not available. This version is fully self-contained.
+    const [currentProductId, setCurrentProductId] = useState(null);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -1101,8 +1065,6 @@ const App = () => {
             setAuthToken(null);
             return;
         }
-
-        // Optimistically set user/token while validating
         setUser(JSON.parse(storedUser));
         setAuthToken(storedToken);
 
@@ -1113,16 +1075,13 @@ const App = () => {
                 });
 
                 if (!res.ok) {
-                    // invalid/expired token
                     localStorage.removeItem('authToken');
                     localStorage.removeItem('user');
                     setUser(null);
                     setAuthToken(null);
                     return;
                 }
-
                 const data = await res.json();
-                // sync user with server response (server may return user)
                 const serverUser = data.user || data;
                 setUser(serverUser);
                 localStorage.setItem('user', JSON.stringify(serverUser));
@@ -1140,50 +1099,44 @@ const App = () => {
         setIsLoading(true);
         fetch(`${API_BASE}/products`)
             .then(r => r.json())
-            .then(data => setProducts(data))
+            .then(data => {
+                const normalized = (data || []).map(p => ({ ...p, price: Number(p.price || 0) }));
+                setProducts(normalized);
+            })
             .catch(err => console.error(err))
             .finally(() => setIsLoading(false));
     }, []);
-  
 
-// When user changes: if logged-in -> merge local cart into server and load server cart.
-// If logged-out -> load cart from localStorage (guest flow).
-useEffect(() => {
-  (async () => {
-    if (user) {
-      // user logged in -> merge guest cart with server and load server cart
-      await mergeLocalCartOnLogin();
-    } else {
-      // no user -> load guest cart from localStorage
-      const storedCart = localStorage.getItem('cart');
-      if (storedCart) {
-        try {
-          setCart(JSON.parse(storedCart));
-        } catch {
-          setCart([]);
+    useEffect(() => {
+        (async () => {
+            if (user) {
+                await mergeLocalCartOnLogin();
+            } else {
+                const storedCart = localStorage.getItem('cart');
+                if (storedCart) {
+                    try {
+                        setCart(JSON.parse(storedCart));
+                    } catch {
+                        setCart([]);
+                    }
+                } else {
+                    setCart([]);
+                }
+            }
+        })();
+    }, [user]);
+
+    useEffect(() => {
+        if (!user) {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        } else {
+            localStorage.removeItem('cart');
         }
-      } else {
-        setCart([]);
-      }
-    }
-  })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [user]);
-
-useEffect(() => {
-  if (!user) {
-    // persist guest cart locally
-    localStorage.setItem('cart', JSON.stringify(cart));
-  } else {
-    // when user is logged in, remove guest cart (we use server as source)
-    localStorage.removeItem('cart');
-  }
-}, [cart, user]);
+    }, [cart, user]);
 
 
     const handleLogout = async () => {
         try {
-            // (optional) tell backend to blacklist token
             const token = localStorage.getItem("authToken");
             await fetch(`${API_BASE}/users/logout`, {
                 method: "POST",
@@ -1191,242 +1144,218 @@ useEffect(() => {
                     Authorization: `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-                // credentials: "include", // only if you are using cookies
+                credentials: "include",
             });
         } catch (err) {
             console.error("Logout request failed:", err);
         }
-
-        // clear client storage
         localStorage.removeItem("authToken");
         localStorage.removeItem("user");
-
-        // reset app state
         setUser(null);
         setAuthToken(null);
         setCart([]);
         setCurrentPage("home");
     };
+    const addToCart = async (product) => {
+        setAuthError('');
+
+        if (!user) {
+            setCart((prev) => {
+                const idx = prev.findIndex(item => item._id === product._id);
+                if (idx !== -1) {
+                    return prev.map((it, i) =>
+                        i === idx ? { ...it, quantity: Number(it.quantity || 0) + 1 } : it
+                    );
+                }
+                return [...prev, { ...product, quantity: 1, price: Number(product.price || 0) }];
+            });
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/cart/add`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: product._id, quantity: 1 }),
+            });
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(`Add to cart failed: ${res.status} ${text}`);
+            }
+            await fetchServerCart();
+        } catch (err) {
+            console.error('addToCart error', err);
+            setAuthError(err.message || 'Could not add to cart');
+        }
+    };
+
+    const fetchServerCart = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/cart`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (!res.ok) throw new Error(`Failed to fetch server cart: ${res.status}`);
+            const data = await res.json();
+            const serverCart = Array.isArray(data) ? data : data.cart || data;
+            const mapped = serverCart.map(ci => {
+                const prod = ci.product || ci.productId || ci.productId?.product || {};
+                const id = prod._id || prod.id || ci.productId || ci._id || ci.id;
+                const rawQty = ci.quantity ?? ci.qty ?? 1;
+                return {
+                    _id: id,
+                    name: prod.name || ci.name || 'Unknown',
+                    price: Number(prod.price ?? ci.price ?? 0),
+                    quantity: Number(rawQty || 0),
+                    image: prod.image || (ci.product && ci.product.image) || '',
+                    serverCartItemId: ci._id || ci.id || undefined,
+                    raw: ci,
+                };
+            });
+            setCart(mapped);
+            return mapped;
+        } catch (err) {
+            console.error('fetchServerCart error', err);
+            return [];
+        }
+    };
+    const mergeLocalCartOnLogin = async () => {
+        try {
+            const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+            if (!Array.isArray(localCart) || localCart.length === 0) {
+                await fetchServerCart();
+                return;
+            }
+            for (const item of localCart) {
+                try {
+                    await fetch(`${API_BASE}/cart/add`, {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ productId: item._id, quantity: item.quantity || 1 }),
+                    });
+                } catch (err) {
+                    console.error('merge item failed', item, err);
+                }
+            }
+            const merged = await fetchServerCart();
+            localStorage.removeItem('cart');
+            return merged;
+        } catch (err) {
+            console.error('mergeLocalCartOnLogin error', err);
+        }
+    };
+    const updateQuantity = async (productId, change) => {
+        if (!user) {
+            setCart((prev) =>
+                prev
+                    .map((item) =>
+                        item._id === productId
+                            ? { ...item, quantity: Math.max(0, Number(item.quantity || 0) + Number(change)) }
+                            : item
+                    )
+                    .filter((item) => Number(item.quantity) > 0)
+            );
+            return;
+        }
+        const curr = cart.find((i) => i._id === productId);
+        const currQty = Number(curr?.quantity || 0);
+        const newQty = Math.max(0, currQty + Number(change));
+
+        if (newQty <= 0) {
+            await handleServerRemove(productId);
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/cart/add`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId, quantity: newQty }),
+            });
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                throw new Error(`Update quantity failed: ${res.status} ${text}`);
+            }
+            await fetchServerCart();
+        } catch (err) {
+            console.error('updateQuantity error', err);
+            setCart((prev) =>
+                prev
+                    .map((item) =>
+                        item._id === productId ? { ...item, quantity: Math.max(0, Number(item.quantity || 0) + Number(change)) } : item
+                    )
+                    .filter((item) => Number(item.quantity) > 0)
+            );
+        }
+    };
+    const handleServerRemove = async (productId) => {
+        try {
+            const res = await fetch(`${API_BASE}/cart/remove/${productId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`Server remove failed: ${res.status} ${text}`);
+            }
+            await fetchServerCart();
+        } catch (err) {
+            console.error('handleServerRemove error', err);
+        }
+    };
+
+    const removeItem = async (productId) => {
+        if (!user) {
+            setCart(prev => prev.filter(item => item._id !== productId));
+            return;
+        }
+        await handleServerRemove(productId);
+    };
 
 
-const addToCart = async (product) => {
-  setAuthError('');
-  if (!user) {
-    // guest path: local state + localStorage handled by effect
-    const existingItem = cart.find(item => item._id === product._id);
-    if (existingItem) {
-      setCart(cart.map(item =>
-        item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
-      ));
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
-    }
-    return;
-  }
-
-  // logged-in path: add to server cart
-  try {
-    const res = await fetch(`${API_BASE}/cart/add`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId: product._id, quantity: 1 }),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Add to cart failed: ${res.status} ${text}`);
-    }
-    // refresh server cart locally
-    await fetchServerCart();
-  } catch (err) {
-    console.error('addToCart error', err);
-    setAuthError(err.message || 'Could not add to cart');
-  }
-};
-
-
-
-    // Fetch cart from server and map into client UI shape
-const fetchServerCart = async () => {
-  try {
-    const res = await fetch(`${API_BASE}/cart`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    if (!res.ok) throw new Error(`Failed to fetch server cart: ${res.status}`);
-    const data = await res.json();
-    // server might return an array or { cart: [...] }
-    const serverCart = Array.isArray(data) ? data : data.cart || data;
-    // map server cart items to UI shape (defensive)
-    const mapped = serverCart.map(ci => {
-      // ci might be { product: {...}, quantity } or { productId: {...}, quantity }
-      const prod = ci.product || ci.productId || ci.productId?.product || {};
-      const id = prod._id || prod.id || ci.productId || ci._id || ci.id;
-      return {
-        _id: id,
-        name: prod.name || ci.name || 'Unknown',
-        price: Number(prod.price ?? ci.price ?? 0),
-        quantity: ci.quantity || ci.qty || 1,
-        image: prod.image || (ci.product && ci.product.image) || '',
-        // keep original server cart item id if present for deletes
-        serverCartItemId: ci._id || ci.id || undefined,
-        raw: ci, // keep raw for debugging if needed
-      };
-    });
-    setCart(mapped);
-    return mapped;
-  } catch (err) {
-    console.error('fetchServerCart error', err);
-    return [];
-  }
-};
-
-// Merge localStorage cart into server cart on login
-const mergeLocalCartOnLogin = async () => {
-  try {
-    const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
-    if (!Array.isArray(localCart) || localCart.length === 0) {
-      // nothing to merge, just fetch server cart
-      await fetchServerCart();
-      return;
-    }
-
-    // POST each local item to server cart endpoint
-    for (const item of localCart) {
-      try {
-        await fetch(`${API_BASE}/cart/add`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId: item._id, quantity: item.quantity || 1 }),
-        });
-      } catch (err) {
-        console.error('merge item failed', item, err);
-      }
-    }
-
-    // refresh server cart into UI
-    const merged = await fetchServerCart();
-    // clear local storage cart to avoid duplicates
-    localStorage.removeItem('cart');
-    return merged;
-  } catch (err) {
-    console.error('mergeLocalCartOnLogin error', err);
-  }
-};
-
-
-
-const updateQuantity = async (productId, change) => {
-  if (!user) {
-    setCart(cart.map(item =>
-      item._id === productId ? { ...item, quantity: Math.max(0, item.quantity + change) } : item
-    ).filter(item => item.quantity > 0));
-    return;
-  }
-
-  // For server: find current quantity and send desired new quantity
-  const curr = cart.find(i => i._id === productId);
-  const newQty = Math.max(0, (curr?.quantity || 0) + change);
-  if (newQty <= 0) {
-    // delete on server
-    await handleServerRemove(productId);
-    return;
-  }
-
-  try {
-    const res = await fetch(`${API_BASE}/cart/add`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productId, quantity: newQty }),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Update quantity failed: ${res.status} ${text}`);
-    }
-    await fetchServerCart();
-  } catch (err) {
-    console.error('updateQuantity error', err);
-  }
-};
-
-
-// Helper to delete a product from server cart
-const handleServerRemove = async (productId) => {
-  try {
-    const res = await fetch(`${API_BASE}/cart/remove/${productId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Server remove failed: ${res.status} ${text}`);
-    }
-    await fetchServerCart();
-  } catch (err) {
-    console.error('handleServerRemove error', err);
-  }
-};
-
-const removeItem = async (productId) => {
-  if (!user) {
-    setCart(cart.filter(item => item._id !== productId));
-    return;
-  }
-  await handleServerRemove(productId);
-};
-
-
-  const clearCart = async () => {
-  if (!user) {
-    setCart([]);
-    return;
-  }
-
-  // Try a dedicated endpoint first (if server supports it)
-  try {
-    const res = await fetch(`${API_BASE}/cart/clear`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
-    if (res.ok) {
-      setCart([]);
-      return;
-    }
-  } catch (err) {
-    // ignore and fallback to deleting items individually
-    console.warn('cart/clear not supported, falling back', err);
-  }
-
-  // Fallback: fetch server cart and remove items individually
-  try {
-    const serverCart = await fetchServerCart();
-    for (const item of serverCart) {
-      try {
-        await fetch(`${API_BASE}/cart/remove/${item._id}`, {
-          method: 'DELETE',
-          credentials: 'include',
-        });
-      } catch (err) {
-        console.error('Failed to delete item during clear fallback', item, err);
-      }
-    }
-    // reload empty cart
-    await fetchServerCart();
-  } catch (err) {
-    console.error('clearCart fallback failed', err);
-  }
-};
-  
-
-  
+    const clearCart = async () => {
+        if (!user) {
+            setCart([]);
+            return;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/cart/clear`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+            if (res.ok) {
+                setCart([]);
+                return;
+            }
+        } catch (err) {
+            console.warn('cart/clear not supported, falling back', err);
+        }
+        try {
+            const serverCart = await fetchServerCart();
+            for (const item of serverCart) {
+                try {
+                    await fetch(`${API_BASE}/cart/remove/${item._id}`, {
+                        method: 'DELETE',
+                        credentials: 'include',
+                    });
+                } catch (err) {
+                    console.error('Failed to delete item during clear fallback', item, err);
+                }
+            }
+            await fetchServerCart();
+        } catch (err) {
+            console.error('clearCart fallback failed', err);
+        }
+    };
 
     const renderPage = () => {
         switch (currentPage) {
             case 'home':
-                return <HomePage products={products} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} />;
+                return <HomePage products={products} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} />;
+            case 'product':
+                return <ProductDetail id={currentProductId} addToCart={addToCart} setCurrentPage={setCurrentPage} />;
             case 'login':
                 return <LoginPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} />;
             case 'register':
