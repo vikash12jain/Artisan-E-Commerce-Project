@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const ProfilePage = ({ user, authToken, setAuthError, setUser, onLogout, setCurrentPage }) => {
+const ProfilePage = ({ user, authToken, setAuthError, setUser, onLogout, setCurrentPage,goBack = () => window.history.back() }) => {
   // Read cart from localStorage for UI display (safe fallback if parent doesn't pass it)
   const [cart, setCart] = useState([]);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -61,6 +61,21 @@ const ProfilePage = ({ user, authToken, setAuthError, setUser, onLogout, setCurr
 
   return (
     <main className="flex-grow container mx-auto p-8">
+       <button
+                onClick={() => {
+                    if (typeof setCurrentPage === "function") {
+                        setCurrentPage("home");
+                    } else {
+                        goBack();
+                    }
+                }}
+                className="mb-1 mt-0  text-sm text-stone-800/80 hover:underline flex gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5" />
+                    <path d="M12 19L5 12L12 5" />
+                    <title>back</title>
+                </svg> <span className='font-bold'>Back</span>
+            </button>
       <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Left column: user info */}
         <div className="bg-white p-6 rounded-xl shadow-lg">

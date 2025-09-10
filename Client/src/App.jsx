@@ -124,7 +124,7 @@ const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen, isSe
         });
 
     return (
-        <main className="flex-grow container mx-auto p-8">
+        <main id="Product-section" className="flex-grow container mx-auto p-8"> 
             <div className="text-center my-8">
                 <h1 className="text-4xl font-bold text-gray-800">Welcome to Artisan Crafts</h1>
                 <p className="mt-2 text-lg text-gray-600">Explore our amazing handcrafted goods!</p>
@@ -180,7 +180,7 @@ const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen, isSe
     );
 };
 
-const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart }) => {
+const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart, goBack = () => window.history.back() }) => {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [candidate, setCandidate] = useState(null); // { _id, name, image }
     const [isDeleting, setIsDeleting] = useState(false);
@@ -244,6 +244,21 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart 
 
     return (
         <main className="flex-grow container mx-auto p-8">
+            <button
+                onClick={() => {
+                    if (typeof setCurrentPage === "function") {
+                        setCurrentPage("home");
+                    } else {
+                        goBack();
+                    }
+                }}
+                className="mb-1 mt-0  text-sm text-stone-800/80 hover:underline flex gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5" />
+                    <path d="M12 19L5 12L12 5" />
+                    <title>back</title>
+                </svg> <span className='font-bold'>Back</span>
+            </button>
             <h2 className="text-3xl font-bold text-center mb-8">Shopping Cart</h2>
             {cart.length === 0 ? (
                 <div className="text-center">
@@ -374,50 +389,52 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart 
                 </div>
             )}
 
-{/* Clear Cart Confirmation Modal */}
-{confirmClearOpen && (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50" onClick={closeClearConfirm} />
-        <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-10">
-            <div className="flex flex-col gap-4">
-                <h3 className="text-lg font-bold">Clear cart?</h3>
-                <p className="text-sm text-gray-600">
-                    This will remove <strong>{cart.length} item{cart.length !== 1 ? 's' : ''}</strong> from your cart
-                    {cart.length > 0 && <> (Total: ₹{cart.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)})</>}.
-                </p>
+            {/* Clear Cart Confirmation Modal */}
+            {confirmClearOpen && (
+                <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/50" onClick={closeClearConfirm} />
+                    <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-10">
+                        <div className="flex flex-col gap-4">
+                            <h3 className="text-lg font-bold">Clear cart?</h3>
+                            <p className="text-sm text-gray-600">
+                                This will remove <strong>{cart.length} item{cart.length !== 1 ? 's' : ''}</strong> from your cart
+                                {cart.length > 0 && <> (Total: ₹{cart.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)})</>}.
+                            </p>
 
-                {/* Optional small preview: show up to 3 item thumbnails */}
-                <div className="flex gap-3 flex-col">
-                    {cart.slice(0, 3).map(it => {return (
-                        <div className='flex gap-4  border border-green-200 rounded-lg p-2 '>
-                        <img key={it._id} src={it.image || `https://placehold.co/80x80/a855f7/ffffff?text=${encodeURIComponent(it.name)}`} alt={it.name} className="w-16 h-16 object-cover rounded-md border" /> 
-                        <span className='text-sm '>{it.name} <br /> Total Qty : {it.quantity} </span>
-                     </div>
-                   )})}
-                    {cart.length > 3 && <div className="flex items-center justify-center w-16 h-16 rounded-md border text-sm text-gray-600">+{cart.length-3}</div>}
-                </div>
+                            {/* Optional small preview: show up to 3 item thumbnails */}
+                            <div className="flex gap-3 flex-col">
+                                {cart.slice(0, 3).map(it => {
+                                    return (
+                                        <div className='flex gap-4  border border-green-200 rounded-lg p-2 '>
+                                            <img key={it._id} src={it.image || `https://placehold.co/80x80/a855f7/ffffff?text=${encodeURIComponent(it.name)}`} alt={it.name} className="w-16 h-16 object-cover rounded-md border" />
+                                            <span className='text-sm '>{it.name} <br /> Total Qty : {it.quantity} </span>
+                                        </div>
+                                    )
+                                })}
+                                {cart.length > 3 && <div className="flex items-center justify-center w-16 h-16 rounded-md border text-sm text-gray-600">+{cart.length - 3}</div>}
+                            </div>
 
-                <div className="mt-4 flex gap-3">
-                    <button
-                        onClick={handleClearConfirmYes}
-                        disabled={isClearing}
-                        className={`px-4 py-2 rounded-full font-semibold ${isClearing ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-600'}`}
-                    >
-                        {isClearing ? 'Clearing...' : 'Yes, clear cart'}
-                    </button>
-                    <button
-                        onClick={closeClearConfirm}
-                        disabled={isClearing}
-                        className="px-4 py-2 rounded-full border font-semibold"
-                    >
-                        No, keep items
-                    </button>
+                            <div className="mt-4 flex gap-3">
+                                <button
+                                    onClick={handleClearConfirmYes}
+                                    disabled={isClearing}
+                                    className={`px-4 py-2 rounded-full font-semibold ${isClearing ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                >
+                                    {isClearing ? 'Clearing...' : 'Yes, clear cart'}
+                                </button>
+                                <button
+                                    onClick={closeClearConfirm}
+                                    disabled={isClearing}
+                                    className="px-4 py-2 rounded-full border font-semibold"
+                                >
+                                    No, keep items
+                                </button>
+                            </div>
+                        </div>
+                        <button onClick={closeClearConfirm} aria-label="Close" className="absolute top-3 right-3 text-gray-500 hover:text-gray-800">✖</button>
+                    </div>
                 </div>
-            </div>
-            <button onClick={closeClearConfirm} aria-label="Close" className="absolute top-3 right-3 text-gray-500 hover:text-gray-800">✖</button>
-        </div>
-    </div>
-)}
+            )}
 
 
         </main>
@@ -921,7 +938,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
                     }
                 }}
                 className="mb-1 mt-0  text-sm text-stone-800/80 hover:underline flex gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
                     <title>back</title>
@@ -1176,7 +1193,7 @@ function ProductDetail({ id, addToCart, goBack = () => window.history.back(), se
                     }
                 }}
                 className="mb-6 text-sm text-stone-800/80 hover:underline flex gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
                     <title>back</title>
@@ -1586,7 +1603,7 @@ const App = () => {
             case 'register':
                 return <RegisterPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} />;
             case 'profile':
-                return <ProfilePage user={user} authToken={authToken} setAuthError={setAuthError} />;
+                return <ProfilePage user={user} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} />;
             case 'admin-dashboard':
                 return <AdminDashboardPage products={products} setProducts={setProducts} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} />;
             case 'cart':
@@ -1611,7 +1628,14 @@ const App = () => {
                             <span>Search</span>
                         </button>
                         <ul className="flex space-x-6 text-amber-100">
-                            <li><button onClick={() => setCurrentPage('home')} className="hover:text-amber-300 font-medium transition-colors">Shop</button></li>
+                            <li><button onClick={() => {
+                                setCurrentPage('home');
+                                setTimeout(() => {
+                                    document.getElementById("Product-section")?.scrollIntoView({
+                                        behavior: "smooth"
+                                    });
+                                }, 50);
+                            }} className="hover:text-amber-300 font-medium transition-colors">Shop</button></li>
                             {user ? (
                                 <>
                                     <li><button onClick={() => setCurrentPage('profile')} className="hover:text-amber-300 font-medium transition-colors">Profile</button></li>
