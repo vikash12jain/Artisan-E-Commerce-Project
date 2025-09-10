@@ -181,6 +181,65 @@ const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen, isSe
 };
 
 const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart }) => {
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [candidate, setCandidate] = useState(null); // { _id, name, image }
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+    const [isClearing, setIsClearing] = useState(false);
+
+    const openClearConfirm = () => setConfirmClearOpen(true);
+    const closeClearConfirm = () => setConfirmClearOpen(false);
+
+    const handleClearConfirmYes = async () => {
+        try {
+            setIsClearing(true);
+            await clearCart();
+            setConfirmClearOpen(false);
+        } catch (err) {
+            console.error('Clear cart failed', err);
+            // optionally show toast/error
+        } finally {
+            setIsClearing(false);
+        }
+    };
+
+
+
+    // close on Escape
+    useEffect(() => {
+        if (!confirmOpen) return;
+        const onKey = (e) => {
+            if (e.key === 'Escape') setConfirmOpen(false);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [confirmOpen]);
+
+    const openConfirm = (item) => {
+        setCandidate(item);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmYes = async () => {
+        if (!candidate) return;
+        try {
+            setIsDeleting(true);
+            await removeItem(candidate._id); // await the parent's removeItem
+            setConfirmOpen(false);
+            setCandidate(null);
+        } catch (err) {
+            console.error('Delete failed', err);
+            // optionally show a toast / error UI here
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleConfirmNo = () => {
+        setConfirmOpen(false);
+        setCandidate(null);
+    };
+
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     return (
@@ -216,22 +275,27 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart 
                                         disabled={Number(item.quantity) <= 1}
                                         title={Number(item.quantity) <= 1 ? "Minimum quantity reached. Use Remove to delete." : "Decrease quantity"}
                                         className={`w-8 h-8 rounded-full transition-all ${Number(item.quantity) <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                        aria-label={Number(item.quantity) <= 1 ? "Minimum quantity" : "Decrease quantity"}
                                     >
                                         -
                                     </button>
-
                                     <span className="font-bold">{item.quantity}</span>
-
                                     <button
                                         onClick={() => updateQuantity(item._id, 1)}
                                         title="Increase quantity"
                                         className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                        aria-label="Increase quantity"
                                     >
                                         +
                                     </button>
                                 </div>
 
-                                <button onClick={() => removeItem(item._id)} className="ml-4 text-red-500 hover:text-red-700">
+                                {/* DELETE button now opens confirm modal */}
+                                <button
+                                    onClick={() => openConfirm(item)}
+                                    className="ml-4 text-red-500 hover:text-red-700"
+                                    aria-label={`Remove ${item.name} from cart`}
+                                >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
@@ -239,6 +303,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart 
                             </div>
                         ))}
                     </div>
+
                     <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg h-fit">
                         <h3 className="text-2xl font-bold mb-4">Order Summary</h3>
                         <div className="space-y-2 text-gray-700">
@@ -261,18 +326,104 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart 
                                 Proceed to Checkout
                             </button>
                             <button
-                                onClick={clearCart}
-                                className="w-full bg-red-500 text-white font-bold py-3 px-4 rounded-full hover:bg-red-600 transition-colors"
+                                onClick={openClearConfirm}
+                                disabled={cart.length === 0}
+                                className={`w-full font-bold py-3 px-4 rounded-full transition-colors ${cart.length === 0 ? 'bg-gray-200 text-gray-600 cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-600'
+                                    }`}
                             >
                                 Clear Cart
                             </button>
+
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* Confirmation Modal */}
+            {confirmOpen && candidate && (
+                <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/50" onClick={handleConfirmNo} />
+                    <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-10">
+                        <div className="flex items-start gap-4">
+                            <img src={candidate.image || `https://placehold.co/120x120/a855f7/ffffff?text=${encodeURIComponent(candidate.name)}`} alt={candidate.name} className="w-24 h-24 object-cover rounded-md" />
+                            <div className="flex-1">
+                                <h3 className="text-lg font-bold">{candidate.name}</h3>
+                                <p className="text-sm text-gray-600 mt-2">Are you sure you want to remove this product from your cart?</p>
+                                <div className="mt-4 flex gap-3">
+                                    <button
+                                        onClick={handleConfirmYes}
+                                        disabled={isDeleting}
+                                        className={`px-4 py-2 rounded-full font-semibold ${isDeleting ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                                        aria-label="Confirm remove"
+                                    >
+                                        {isDeleting ? 'Removing...' : 'Yes, remove'}
+                                    </button>
+                                    <button
+                                        onClick={handleConfirmNo}
+                                        disabled={isDeleting}
+                                        className="px-4 py-2 rounded-full border font-semibold"
+                                        aria-label="Cancel remove"
+                                    >
+                                        No, keep it
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button onClick={handleConfirmNo} aria-label="Close" className="absolute top-3 right-3 text-gray-500 hover:text-gray-800">✖</button>
+                    </div>
+                </div>
+            )}
+
+{/* Clear Cart Confirmation Modal */}
+{confirmClearOpen && (
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/50" onClick={closeClearConfirm} />
+        <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-10">
+            <div className="flex flex-col gap-4">
+                <h3 className="text-lg font-bold">Clear cart?</h3>
+                <p className="text-sm text-gray-600">
+                    This will remove <strong>{cart.length} item{cart.length !== 1 ? 's' : ''}</strong> from your cart
+                    {cart.length > 0 && <> (Total: ₹{cart.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)})</>}.
+                </p>
+
+                {/* Optional small preview: show up to 3 item thumbnails */}
+                <div className="flex gap-3 flex-col">
+                    {cart.slice(0, 3).map(it => {return (
+                        <div className='flex gap-4  border border-green-200 rounded-lg p-2 '>
+                        <img key={it._id} src={it.image || `https://placehold.co/80x80/a855f7/ffffff?text=${encodeURIComponent(it.name)}`} alt={it.name} className="w-16 h-16 object-cover rounded-md border" /> 
+                        <span className='text-sm '>{it.name} <br /> Total Qty : {it.quantity} </span>
+                     </div>
+                   )})}
+                    {cart.length > 3 && <div className="flex items-center justify-center w-16 h-16 rounded-md border text-sm text-gray-600">+{cart.length-3}</div>}
+                </div>
+
+                <div className="mt-4 flex gap-3">
+                    <button
+                        onClick={handleClearConfirmYes}
+                        disabled={isClearing}
+                        className={`px-4 py-2 rounded-full font-semibold ${isClearing ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-red-500 text-white hover:bg-red-600'}`}
+                    >
+                        {isClearing ? 'Clearing...' : 'Yes, clear cart'}
+                    </button>
+                    <button
+                        onClick={closeClearConfirm}
+                        disabled={isClearing}
+                        className="px-4 py-2 rounded-full border font-semibold"
+                    >
+                        No, keep items
+                    </button>
+                </div>
+            </div>
+            <button onClick={closeClearConfirm} aria-label="Close" className="absolute top-3 right-3 text-gray-500 hover:text-gray-800">✖</button>
+        </div>
+    </div>
+)}
+
+
         </main>
     );
 };
+
 
 const CheckoutPage = ({ cart, setCurrentPage, clearCart }) => {
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
