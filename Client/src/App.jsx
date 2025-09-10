@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-
+import './app.css'
 import ProfilePage from '../Pages/Profile'
 
 const API_BASE = import.meta.env.VITE_API_URL;
@@ -24,9 +24,14 @@ const ProductCard = ({ product, addToCart, onOpen }) => {
                 <h3 onClick={() => onOpen && onOpen(product._id)} className="text-lg font-semibold text-gray-800 mt-2 cursor-pointer">{product.name}</h3>
                 <div className="flex items-center justify-between mt-4">
                     <span className="text-xl font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
-                    <button onClick={() => addToCart(product)} className="bg-stone-800 text-amber-100 font-medium py-2 px-4 rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md">
-                        Add to Cart
+                    <button
+                        onClick={() => addToCart(product)}
+                        disabled={(product.quantity ?? 0) <= 0}
+                        className={`bg-stone-800 text-amber-100 font-medium py-2 px-4 rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md ${((product.quantity ?? 0) <= 0) ? 'opacity-50 cursor-not-allowed hover:bg-stone-800' : ''}`}
+                    >
+                        {(product.quantity ?? 0) > 0 ? 'Add to Cart' : 'Out of stock'}
                     </button>
+
                 </div>
             </div>
         </div>
@@ -105,7 +110,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [sortOrder, setSortOrder] = useState('none');
 
-    const allCategories = ['All', ...new Set(products.map(product => product.category))];
+    const allCategories = ['Categories', ...new Set(products.map(product => product.category))];
 
     const filteredAndSortedProducts = products
         .filter(product => {
@@ -130,10 +135,10 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
                 <p className="mt-2 text-lg text-gray-600">Explore our amazing handcrafted goods!</p>
             </div>
 
-            <div className="flex flex-col md:flex-row items-center justify-between my-8 space-y-4 md:space-y-0 md:space-x-4">
+            <div className="flex flex-col md:flex-row  my-8 space-y-4 justify-between items-center md:space-y-0 md:space-x-4">
                 <button
                     onClick={() => setIsSearchModalOpen(true)}
-                    className="w-full md:w-1/3 text-stone-800 border border-gray-300 rounded-full px-4 py-2 flex items-center justify-center gap-2 hover:bg-gray-100"
+                    className="w-full md:w-1/6 text-stone-800 border border-gray-300 rounded-full px-4 py-2 flex items-center justify-start gap-2 hover:bg-gray-100"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -141,24 +146,26 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
                     <span>Search</span>
                 </button>
 
-                <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full md:w-1/3 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
-                >
-                    {allCategories.map(category => (
-                        <option key={category} value={category}>{category}</option>
-                    ))}
-                </select>
-                <select
-                    value={sortOrder}
-                    onChange={(e) => setSortOrder(e.target.value)}
-                    className="w-full md:w-1/3 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
-                >
-                    <option value="none">Sort by Price</option>
-                    <option value="lowToHigh">Price: Low to High</option>
-                    <option value="highToLow">Price: High to Low</option>
-                </select>
+                <div className='flex gap-3'>
+                    <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="w-21  p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    >
+                        {allCategories.map(category => (
+                            <option key={category} value={category}>{category}</option>
+                        ))}
+                    </select>
+                    <select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        className="w-21 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                    >
+                        <option value="none">Sort by Price</option>
+                        <option value="lowToHigh">Price: Low to High</option>
+                        <option value="highToLow">Price: High to Low</option>
+                    </select>
+                </div>
             </div>
 
             <section className="my-16">
@@ -167,7 +174,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
                     {isLoading ? (
                         <p className="text-center col-span-full text-gray-500">Loading products...</p>
                     ) : filteredAndSortedProducts.length > 0 ? (
-                        filteredAndSortedProducts.map(product => <ProductCard key={product._id} product={product} addToCart={()=>handleAddToCart(product)} onOpen={onOpen} />)
+                        filteredAndSortedProducts.map(product => <ProductCard key={product._id} product={product} addToCart={() => handleAddToCart(product)} onOpen={onOpen} />)
                     ) : (
                         <p className="text-center col-span-full text-gray-500">No products found.</p>
                     )}
@@ -182,7 +189,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
     );
 };
 
-const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart, goBack = () => window.history.back() }) => {
+const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart, goBack = () => window.history.back(), user }) => {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [candidate, setCandidate] = useState(null); // { _id, name, image }
     const [isDeleting, setIsDeleting] = useState(false);
@@ -337,7 +344,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                         </div>
                         <div className="mt-6 flex flex-col space-y-4">
                             <button
-                                onClick={() => setCurrentPage('checkout')}
+                                onClick={() => { user ? setCurrentPage('checkout') : setCurrentPage('login') }}
                                 className="w-full bg-stone-800 text-amber-100 font-bold py-3 px-4 rounded-full hover:bg-stone-700 transition-colors"
                             >
                                 Proceed to Checkout
@@ -405,14 +412,19 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
 
                             {/* Optional small preview: show up to 3 item thumbnails */}
                             <div className="flex gap-3 flex-col">
-                                {cart.slice(0, 3).map(it => {
-                                    return (
-                                        <div className='flex gap-4  border border-green-200 rounded-lg p-2 '>
-                                            <img key={it._id} src={it.image || `https://placehold.co/80x80/a855f7/ffffff?text=${encodeURIComponent(it.name)}`} alt={it.name} className="w-16 h-16 object-cover rounded-md border" />
-                                            <span className='text-sm '>{it.name} <br /> Total Qty : {it.quantity} </span>
-                                        </div>
-                                    )
-                                })}
+                                {cart.slice(0, 3).map(it => (
+                                    <div key={it._id || it.productId} className="flex gap-4 border border-green-200 rounded-lg p-2">
+                                        <img
+                                            src={it.image || `https://placehold.co/80x80/a855f7/ffffff?text=${encodeURIComponent(it.name)}`}
+                                            alt={it.name}
+                                            className="w-16 h-16 object-cover rounded-md border"
+                                        />
+                                        <span className="text-sm">
+                                            {it.name} <br /> Total Qty : {it.quantity}
+                                        </span>
+                                    </div>
+                                ))}
+
                                 {cart.length > 3 && <div className="flex items-center justify-center w-16 h-16 rounded-md border text-sm text-gray-600">+{cart.length - 3}</div>}
                             </div>
 
@@ -444,23 +456,23 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
 };
 
 
-const CheckoutPage = ({ cart, setCurrentPage, clearCart }) => {
+const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back(), handleCheckout, user }) => {
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
-
     const handlePlaceOrder = async (event) => {
         event.preventDefault();
         setIsPlacingOrder(true);
-
-        setTimeout(async () => {
-            await clearCart();
-            setIsPlacingOrder(false);
+        try {
+            // optionally collect payment info from form and pass as payload
+            await handleCheckout({}); // send empty payload or payment details
             setOrderPlaced(true);
-            setTimeout(() => {
-                setCurrentPage('home');
-            }, 3000);
-        }, 1500);
+            setIsPlacingOrder(false);
+        } catch (err) {
+            console.error('Place order failed', err);
+            setIsPlacingOrder(false);
+            // handleCheckout already shows toast & refreshes data on failure
+        }
     };
 
     if (orderPlaced) {
@@ -476,6 +488,21 @@ const CheckoutPage = ({ cart, setCurrentPage, clearCart }) => {
 
     return (
         <main className="flex-grow container mx-auto p-8">
+            <button
+                onClick={() => {
+                    if (typeof setCurrentPage === "function") {
+                        setCurrentPage("home");
+                    } else {
+                        goBack();
+                    }
+                }}
+                className="mb-1 mt-0  text-sm text-stone-800/80  hover:text-amber-500 font-medium transition-colors flex gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5" />
+                    <path d="M12 19L5 12L12 5" />
+                    <title>back</title>
+                </svg> <span className='font-bold'>Back</span>
+            </button>
             <h2 className="text-3xl font-bold text-center mb-8">Checkout</h2>
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl mx-auto">
                 <div className="mb-8">
@@ -495,19 +522,19 @@ const CheckoutPage = ({ cart, setCurrentPage, clearCart }) => {
                 <div className="mb-8">
                     <h3 className="text-xl font-bold mb-4">Shipping Information</h3>
                     <form className="space-y-4">
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" placeholder="Full Name" />
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" placeholder="Address Line 1" />
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" placeholder="City, State, ZIP" />
+                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" required placeholder="FullName" />
+                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" required placeholder="Address Line 1" />
+                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" required placeholder="City, State, ZIP" />
                     </form>
                 </div>
 
                 <div className="mb-8">
                     <h3 className="text-xl font-bold mb-4">Payment Details</h3>
                     <form className="space-y-4">
-                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" placeholder="Card Number" />
+                        <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" disabled placeholder="Card Number" />
                         <div className="flex space-x-4">
-                            <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" placeholder="MM/YY" />
-                            <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" placeholder="CVV" />
+                            <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" disabled placeholder="MM/YY" />
+                            <input className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700" type="text" disabled placeholder="CVV" />
                         </div>
                     </form>
                 </div>
@@ -565,6 +592,7 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
 
     return (
         <main className="flex-grow container mx-auto p-8 flex items-center justify-center">
+
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
                 <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
                 <form onSubmit={handleSubmit}>
@@ -623,7 +651,7 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
     );
 };
 
-const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
+const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, }) => {
     const [fullName, setFullName] = useState({ firstname: "", lastname: "" });
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -669,6 +697,8 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
 
     return (
         <main className="flex-grow container mx-auto p-8 flex items-center justify-center">
+
+
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
                 <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
                 <form onSubmit={handleSubmit}>
@@ -1136,7 +1166,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
     );
 };
 
-function ProductDetail({ id, addToCart, handleAddToCart,toastMessage, goBack = () => window.history.back(), setCurrentPage }) {
+function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = () => window.history.back(), setCurrentPage, user }) {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -1181,7 +1211,7 @@ function ProductDetail({ id, addToCart, handleAddToCart,toastMessage, goBack = (
     if (error) return <div className="p-8 text-red-500">Error: {error}</div>;
     if (!product) return <div className="p-8">No product found.</div>;
 
-    const available = (product.quantity ?? 0) - (product.sold ?? 0);
+    const available = Number(product.quantity ?? 0);
     const inStock = available > 0;
 
     return (
@@ -1246,32 +1276,29 @@ function ProductDetail({ id, addToCart, handleAddToCart,toastMessage, goBack = (
 
                         <button
                             onClick={() => {
+                                // no-op if disabled; this won't run because button will be disabled
                                 addToCart(product);
-                                if (typeof setCurrentPage === "function") setCurrentPage("checkout");
+                                if (typeof setCurrentPage === "function") { user ? setCurrentPage("checkout") : setCurrentPage('login') }
                             }}
-                            className="py-3 px-5 border rounded-full"
+                            disabled={!inStock}
+                            aria-disabled={!inStock}
+                            title={!inStock ? 'Available soon' : 'Buy now'}
+                            className={`py-3 px-5 border rounded-full transition-colors focus:outline-none ${!inStock
+                                ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-500'
+                                : 'hover:bg-gray-100'
+                                }`}
                         >
-                            Buy Now
+                            {!inStock ? 'Available soon' : 'Buy Now'}
                         </button>
                     </div>
-                    <div className="mt-4 text-sm text-gray-500">
-                        <p>
-                            <strong>SKU:</strong> {product.sku || "-"}
-                        </p>
-                        <p>
-                            <strong>Sold:</strong> {product.sold ?? 0}
-                        </p>
-                        <p>
-                            <strong>Category:</strong> {product.category || "-"}
-                        </p>
-                    </div>
+
                 </div>
             </div>
             {toastMessage && (
-  <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fadeIn">
-    {toastMessage}
-  </div>
-)}
+                <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fadeIn">
+                    {toastMessage}
+                </div>
+            )}
         </main>
     );
 }
@@ -1326,17 +1353,33 @@ const App = () => {
         })();
     }, []);
 
-    useEffect(() => {
+    // helper to fetch & normalize products (call this from elsewhere too)
+    const fetchProducts = async () => {
         setIsLoading(true);
-        fetch(`${API_BASE}/products`)
-            .then(r => r.json())
-            .then(data => {
-                const normalized = (data || []).map(p => ({ ...p, price: Number(p.price || 0) }));
-                setProducts(normalized);
-            })
-            .catch(err => console.error(err))
-            .finally(() => setIsLoading(false));
+        try {
+            const res = await fetch(`${API_BASE}/products`);
+            if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
+            const data = await res.json();
+            const normalized = (data || []).map(p => ({
+                ...p,
+                price: Number(p.price || 0),
+                quantity: Number(p.quantity || 0)
+            }));
+            setProducts(normalized);
+            return normalized;
+        } catch (err) {
+            console.error('fetchProducts error', err);
+            return [];
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // initially load products
+    useEffect(() => {
+        fetchProducts();
     }, []);
+
 
     useEffect(() => {
         (async () => {
@@ -1387,21 +1430,55 @@ const App = () => {
         setCart([]);
         window.location.replace(`${import.meta.env.FRONTEND_URL}`);
     };
+
+    // ---- helpers for inventory checks ----
+    const getProductById = (id) => products.find(p => String(p._id) === String(id));
+
+    const cartQtyFor = (productId) => {
+        const it = cart.find(i => String(i._id) === String(productId));
+        return it ? Number(it.quantity || 0) : 0;
+    };
+
+    const canAddToCart = (productId, qtyToAdd = 1) => {
+        const prod = getProductById(productId);
+        if (!prod) return false;
+        const available = Number(prod.quantity ?? 0);
+        const alreadyInCart = cartQtyFor(productId);
+        return (alreadyInCart + Number(qtyToAdd)) <= available;
+    };
+
+
     const addToCart = async (product) => {
         setAuthError('');
+
+        // local check first
+        if (!canAddToCart(product._id, 1)) {
+            const avail = getProductById(product._id)?.quantity ?? 0;
+            setToastMessage(`Only ${avail} left in stock`);
+            setTimeout(() => setToastMessage(""), 3000);
+            return;
+        }
 
         if (!user) {
             setCart((prev) => {
                 const idx = prev.findIndex(item => item._id === product._id);
                 if (idx !== -1) {
+                    const currQty = Number(prev[idx].quantity || 0);
+                    // final local guard
+                    if (currQty + 1 > (getProductById(product._id)?.quantity ?? Infinity)) {
+                        setToastMessage(`Cannot add more than available stock`);
+                        setTimeout(() => setToastMessage(""), 2000);
+                        return prev;
+                    }
                     return prev.map((it, i) =>
-                        i === idx ? { ...it, quantity: Number(it.quantity || 0) + 1 } : it
+                        i === idx ? { ...it, quantity: currQty + 1 } : it
                     );
                 }
                 return [...prev, { ...product, quantity: 1, price: Number(product.price || 0) }];
             });
             return;
         }
+
         try {
             console.debug('addToCart request', { productId: product._id, qty: 1 });
             const res = await fetch(`${API_BASE}/cart/add`, {
@@ -1412,14 +1489,18 @@ const App = () => {
             });
             if (!res.ok) {
                 const text = await res.text().catch(() => '');
-                throw new Error(`Add to cart failed: ${res.status} ${text}`);
+                // surface server message (which ideally contains stock info)
+                throw new Error(text || `Add to cart failed: ${res.status}`);
             }
             await fetchServerCart();
         } catch (err) {
             console.error('addToCart error', err);
             setAuthError(err.message || 'Could not add to cart');
+            setToastMessage(err.message || 'Could not add to cart');
+            setTimeout(() => setToastMessage(""), 3000);
         }
     };
+
 
     const handleAddToCart = (product) => {
         addToCart(product);
@@ -1488,62 +1569,65 @@ const App = () => {
 
     const updateQuantity = async (productId, change) => {
         if (Number(change) === 0) return;
+
+        const curr = cart.find(i => String(i._id) === String(productId));
+        const prevQty = Number(curr?.quantity || 0);
+        const newQty = prevQty + Number(change);
+
+        if (newQty <= 0) {
+            if (user) {
+                await handleServerRemove(productId);
+            } else {
+                setCart(prev => prev.filter(i => String(i._id) !== String(productId)));
+            }
+            return;
+        }
+
+        // local stock guard
+        const product = getProductById(productId);
+        if (product && newQty > Number(product.quantity || 0)) {
+            setToastMessage(`Only ${product.quantity} items available`);
+            setTimeout(() => setToastMessage(""), 2500);
+            return;
+        }
+
         if (!user) {
+            // guest cart update
             setCart(prev =>
-                prev
-                    .map(item =>
-                        item._id === productId
-                            ? { ...item, quantity: Math.max(0, Number(item.quantity || 0) + Number(change)) }
-                            : item
-                    )
-                    .filter(item => Number(item.quantity) > 0)
+                prev.map(item =>
+                    String(item._id) === String(productId) ? { ...item, quantity: newQty } : item
+                )
             );
             return;
         }
 
-        // Logged-in: get current item
-        const curr = cart.find(i => i._id === productId);
-        if (!curr) return;
-
-        const prevQty = Number(curr.quantity || 0);
-        const newQty = prevQty + Number(change);
-
-        // if new qty would be 0 or less, remove from server
-        if (newQty <= 0) {
-            await handleServerRemove(productId);
-            return;
-        }
-
-        // optimistic UI update
-        setCart(prev => prev.map(item => item._id === productId ? { ...item, quantity: newQty } : item));
+        // optimistic update for logged-in user
+        setCart(prev => prev.map(item => String(item._id) === String(productId) ? { ...item, quantity: newQty } : item));
 
         try {
-            // IMPORTANT: send **delta** (change) — not absolute newQty,
-            // because API /cart/add expects an increment amount (like addToCart does).
-            // Send numeric change so server increments/decrements correctly.
-            console.debug('updateQuantity request', { productId, change: Number(change) });
             const res = await fetch(`${API_BASE}/cart/add`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, quantity: Number(change) }), // <-- send change (±1)
+                body: JSON.stringify({ productId, quantity: Number(change) }), // delta
             });
             if (!res.ok) {
                 const text = await res.text().catch(() => '');
-                throw new Error(`Update quantity failed: ${res.status} ${text}`);
+                throw new Error(text || `Update quantity failed: ${res.status}`);
             }
-            // refresh canonical server cart
             await fetchServerCart();
         } catch (err) {
             console.error('updateQuantity error', err);
-            // rollback to previous server quantity we read (prevQty)
+            // rollback
             setCart(prev =>
-                prev
-                    .map(item => item._id === productId ? { ...item, quantity: prevQty } : item)
+                prev.map(item => String(item._id) === String(productId) ? { ...item, quantity: prevQty } : item)
                     .filter(item => Number(item.quantity) > 0)
             );
+            setToastMessage('Could not update quantity. Try again.');
+            setTimeout(() => setToastMessage(""), 2500);
         }
     };
+
 
 
     const handleServerRemove = async (productId) => {
@@ -1574,44 +1658,131 @@ const App = () => {
     const clearCart = async () => {
         if (!user) {
             setCart([]);
+            try { localStorage.removeItem('cart'); } catch (_) { }
             return;
         }
         try {
-            const res = await fetch(`${API_BASE}/cart/clear`, {
-                method: 'DELETE',
-                credentials: 'include',
-            });
+            const res = await fetch(`${API_BASE}/cart/clear`, { method: 'DELETE', credentials: 'include' });
             if (res.ok) {
                 setCart([]);
                 return;
             }
-        } catch (err) {
-            console.warn('cart/clear not supported, falling back', err);
+        } catch (e) {
+            console.warn('cart/clear failed', e);
         }
+
+        // fallback - remove items one by one
         try {
             const serverCart = await fetchServerCart();
-            for (const item of serverCart) {
+            for (const it of serverCart) {
                 try {
-                    await fetch(`${API_BASE}/cart/remove/${item._id}`, {
-                        method: 'DELETE',
-                        credentials: 'include',
-                    });
-                } catch (err) {
-                    console.error('Failed to delete item during clear fallback', item, err);
-                }
+                    const idToRemove = it.productId?._id || it.productId;
+                    if (idToRemove) {
+                        await fetch(`${API_BASE}/cart/remove/${idToRemove}`, { method: 'DELETE', credentials: 'include' });
+                    }
+                } catch (e) { console.warn('Remove fallback failed', e); }
             }
             await fetchServerCart();
+            setCart([]);
         } catch (err) {
             console.error('clearCart fallback failed', err);
         }
     };
+
+
+    // --- handleCheckout: perform server checkout and refresh products/cart ---
+    const handleCheckout = async (paymentPayload = {}) => {
+        if (!cart || cart.length === 0) {
+            setToastMessage('Cart is empty');
+            setTimeout(() => setToastMessage(''), 2000);
+            return;
+        }
+
+        const orderItems = cart.map(ci => ({ productId: ci._id, quantity: Number(ci.quantity || 0) }));
+
+        try {
+            const res = await fetch(`${API_BASE}/checkout`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: orderItems, payment: paymentPayload }),
+            });
+
+            if (!res.ok) {
+                const txt = await res.text().catch(() => '');
+                throw new Error(txt || `Checkout failed: ${res.status}`);
+            }
+
+            const resp = await res.json();
+
+            // --- attempt to clear server-side cart (preferred) ---
+            try {
+                // Try clearing cart using a dedicated endpoint (if supported)
+                const clearRes = await fetch(`${API_BASE}/cart/clear`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                });
+                if (!clearRes.ok) {
+                    // fallback: try to remove each item individually using server canonical cart
+                    const serverCart = await fetchServerCart(); // this will refresh setCart too
+                    for (const it of serverCart) {
+                        try {
+                            // serverCart items might include serverCartItemId or product id - attempt both
+                            const idToRemove = it.serverCartItemId || it._id || it.productId;
+                            if (idToRemove) {
+                                await fetch(`${API_BASE}/cart/remove/${idToRemove}`, {
+                                    method: 'DELETE',
+                                    credentials: 'include',
+                                });
+                            }
+                        } catch (e) {
+                            console.warn('Fallback remove failed for', it, e);
+                        }
+                    }
+                } else {
+                    // if cart/clear succeeded, ensure we refresh canonical server cart
+                    await fetchServerCart();
+                }
+            } catch (e) {
+                console.warn('Could not clear server cart cleanly:', e);
+                // still proceed to clear client
+                try { await fetchServerCart(); } catch (_) { /* best-effort */ }
+            }
+
+            // --- clear client-side cart (both for logged-in and guest) ---
+            setCart([]);
+            try { localStorage.removeItem('cart'); } catch (e) { /* ignore */ }
+
+            // refresh product list to reflect new inventory
+            await fetchProducts();
+
+            setToastMessage('Order placed successfully!');
+            setTimeout(() => setToastMessage(''), 3500);
+
+            setCurrentPage('home'); // or an orders/confirmation page
+            return resp;
+        } catch (err) {
+            console.error('handleCheckout error', err);
+            setToastMessage(err.message || 'Checkout failed. Please try again.');
+            setTimeout(() => setToastMessage(''), 3500);
+
+            // refresh canonical server state (cart + products)
+            try { await fetchServerCart(); } catch (_) { }
+            try { await fetchProducts(); } catch (_) { }
+
+            throw err;
+        }
+    };
+
+
+
 
     const renderPage = () => {
         switch (currentPage) {
             case 'home':
                 return <HomePage products={products} toastMessage={toastMessage} handleAddToCart={handleAddToCart} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} isSearchModalOpen={isSearchModalOpen} setIsSearchModalOpen={setIsSearchModalOpen} />;
             case 'product':
-                return <ProductDetail id={currentProductId} addToCart={addToCart} setCurrentPage={setCurrentPage} toastMessage={toastMessage} handleAddToCart={handleAddToCart}  />;
+                return <ProductDetail id={currentProductId} addToCart={addToCart} setCurrentPage={setCurrentPage} toastMessage={toastMessage} handleAddToCart={handleAddToCart} user={user} />;
             case 'login':
                 return <LoginPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} />;
             case 'register':
@@ -1621,16 +1792,16 @@ const App = () => {
             case 'admin-dashboard':
                 return <AdminDashboardPage products={products} setProducts={setProducts} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} />;
             case 'cart':
-                return <CartPage cart={cart} setCurrentPage={setCurrentPage} updateQuantity={updateQuantity} removeItem={removeItem} clearCart={clearCart} />;
+                return <CartPage cart={cart} setCurrentPage={setCurrentPage} updateQuantity={updateQuantity} removeItem={removeItem} clearCart={clearCart} user={user} />;
             case 'checkout':
-                return <CheckoutPage cart={cart} setCurrentPage={setCurrentPage} clearCart={clearCart} />;
+                return <CheckoutPage cart={cart} setCurrentPage={setCurrentPage} handleCheckout={handleCheckout} user={user} />;
             default:
                 return <HomePage products={products} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} />;
         }
     };
 
     return (
-        <div className="min-h-screen flex flex-col font-sans">
+        <div className=" hide-scrollbar min-h-screen flex flex-col font-sans">
             <header className="bg-stone-800 shadow-md">
                 <div className="container mx-auto px-4 flex justify-between items-center py-4">
                     <a href="#" onClick={() => setCurrentPage('home')} className="text-amber-100 text-2xl font-serif font-bold tracking-widest">ARTISAN</a>
@@ -1696,7 +1867,14 @@ const App = () => {
                         <div className="text-center text-white px-4 max-w-3xl">
                             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-extrabold mb-4 leading-tight tracking-wide">Handcrafted Goods for a Thoughtful Home</h1>
                             <p className="text-base sm:text-lg md:text-xl font-light mb-8 max-w-xl mx-auto">Discover our curated collection of unique items made with intention by skilled artisans.</p>
-                            <button onClick={() => setCurrentPage('home')} className="bg-amber-100 text-stone-800 px-8 py-4 rounded-full font-semibold text-lg hover:bg-white transition-colors shadow-lg">Explore the Collection</button>
+                            <button onClick={() => {
+                                setCurrentPage('home');
+                                setTimeout(() => {
+                                    document.getElementById("Product-section")?.scrollIntoView({
+                                        behavior: "smooth"
+                                    });
+                                }, 50);
+                            }} className="bg-amber-100 text-stone-800 px-8 py-4 rounded-full font-semibold text-lg hover:bg-white transition-colors shadow-lg">Explore the Collection</button>
                         </div>
                     </div>
                 </div>
@@ -1712,40 +1890,14 @@ const App = () => {
             {renderPage()}
             {isSearchModalOpen && <SearchModal products={products} onClose={() => setIsSearchModalOpen(false)} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} />}
 
-            <footer className="bg-stone-900 text-amber-100 py-12 mt-auto">
-                <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
-                    <div>
-                        <h3 className="text-xl font-bold font-serif text-white mb-4">ARTISAN</h3>
-                        <p>A marketplace for unique artisanal goods, crafted with passion.</p>
-                    </div>
-                    <div>
-                        <h4 className="text-lg font-semibold text-white mb-4">Company</h4>
-                        <ul>
-                            <li><a href="#" className="hover:text-amber-300 transition-colors">About</a></li>
-                            <li><a href="#" className="hover:text-amber-300 transition-colors">Contact</a></li>
-                            <li><a href="#" className="hover:text-amber-300 transition-colors">FAQ</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="text-lg font-semibold text-white mb-4">Categories</h4>
-                        <ul>
-                            <li><a href="#" className="hover:text-amber-300 transition-colors">Pottery</a></li>
-                            <li><a href="#" className="hover:text-amber-300 transition-colors">Jewelry</a></li>
-                            <li><a href="#" className="hover:text-amber-300 transition-colors">Textiles</a></li>
-                            <li><a href="#" className="hover:text-amber-300 transition-colors">Woodworks</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 className="text-lg font-semibold text-white mb-4">Follow Us</h4>
-                        <div className="flex space-x-4">
-                            <a href="#" className="hover:text-amber-300 transition-colors">FB</a>
-                            <a href="#" className="hover:text-amber-300 transition-colors">IG</a>
-                            <a href="#" className="hover:text-amber-300 transition-colors">TW</a>
-                        </div>
-                    </div>
+            <footer className="bg-stone-900 text-amber-100 py-6 mt-auto">
+                <div className='flex flex-col items-center'>
+                    <h3 className="text-xl font-bold font-serif text-white ">ARTISAN</h3>
+                    <p className='text-white'>At ARTISAN, we believe every product has a story. They're all made by hand, with heart, to support the talented artists who create them.</p>
                 </div>
-                <div className="text-center mt-8 pt-4 border-t border-gray-700">
-                    <p className="text-sm">&copy; 2024 ARTISAN. All rights reserved.</p>
+
+                <div className="text-center mt-4 pt-4 border-t border-gray-700">
+                    <p className="text-sm">&copy; 2025 ARTISAN. All rights reserved.</p>
                 </div>
             </footer>
         </div>

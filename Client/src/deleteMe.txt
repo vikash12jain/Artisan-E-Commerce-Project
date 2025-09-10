@@ -22,7 +22,25 @@ const GET_CART = `${API_BASE}/cart`;
 
 
 
+API : 
 
+// --- USERS ---
+REGISTER = `${API_BASE}/users/register`; 
+LOGIN = `${API_BASE}/users/login`; 
+PROFILE = `${API_BASE}/users/profile`; 
+LOGOUT = `${API_BASE}/users/logout`; 
+
+// --- PRODUCTS ---
+GET_ALL_PRODUCTS = `${API_BASE}/products`; 
+GET_PRODUCT = (id) => `${API_BASE}/products/${id}`; 
+CREATE_PRODUCT = `${API_BASE}/products`; 
+UPDATE_PRODUCT = (id) => `${API_BASE}/products/${id}`; 
+DELETE_PRODUCT = (id) => `${API_BASE}/products/${id}`; 
+
+// --- CART ---
+ADD_TO_CART = `${API_BASE}/cart/add`; 
+REMOVE_FROM_CART = (productId) => `${API_BASE}/cart/remove/${productId}`; 
+GET_CART = `${API_BASE}/cart`;
 
 
 

@@ -9,7 +9,7 @@ const userRoutes = require("./Routes/User.Route");
 const productRoutes = require("./Routes/Product.Route");
 const cartRoutes = require("./Routes/Cart.Route");
 const errorHandler = require("./Middleware/ErrorMiddleware");
-
+const CheckoutRoutes = require('./Routes/Checkout.Routes');
 const app = express();
 
 app.use(express.json()); 
@@ -26,6 +26,7 @@ app.use(
 app.use("/api/users", userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes); 
+app.use("/api/checkout", CheckoutRoutes); 
 
 app.get('/', (req, res) => {
     res.send('hell0 world');

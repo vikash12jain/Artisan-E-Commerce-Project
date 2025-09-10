@@ -49,3 +49,10 @@ exports.getCart = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id).populate('cart.productId');
     res.status(200).json(user.cart);
 });
+
+exports.clearCart = asyncHandler(async (req, res) => {
+  const user = req.user;
+  user.cart = []; // empty array
+  await user.save();
+  res.status(200).json({ message: "Cart cleared successfully.", cart: user.cart });
+});
