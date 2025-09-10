@@ -100,7 +100,7 @@ const SearchModal = ({ products, onClose, addToCart, onOpen }) => {
     );
 };
 
-const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen, isSearchModalOpen, setIsSearchModalOpen }) => {
+const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, isSearchModalOpen, setIsSearchModalOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [sortOrder, setSortOrder] = useState('none');
@@ -167,15 +167,17 @@ const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen, isSe
                     {isLoading ? (
                         <p className="text-center col-span-full text-gray-500">Loading products...</p>
                     ) : filteredAndSortedProducts.length > 0 ? (
-                        filteredAndSortedProducts.map(product => <ProductCard key={product._id} product={product} addToCart={addToCart} onOpen={onOpen} />)
+                        filteredAndSortedProducts.map(product => <ProductCard key={product._id} product={product} addToCart={()=>handleAddToCart(product)} onOpen={onOpen} />)
                     ) : (
                         <p className="text-center col-span-full text-gray-500">No products found.</p>
                     )}
                 </div>
             </section>
-
-
-
+            {toastMessage && (
+                <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fadeIn">
+                    {toastMessage}
+                </div>
+            )}
         </main>
     );
 };
@@ -252,7 +254,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                         goBack();
                     }
                 }}
-                className="mb-1 mt-0  text-sm text-stone-800/80 hover:underline flex gap-1">
+                className="mb-1 mt-0  text-sm text-stone-800/80 hover:text-amber-500 font-medium transition-colors flex gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
@@ -642,7 +644,7 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
                     email,
                     password,
                 }),
-                    credentials: 'include',
+                credentials: 'include',
             });
 
             const data = await response.json();
@@ -763,9 +765,6 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
     );
 };
 
-
-
-<ProfilePage />
 
 
 const AdminDashboardPage = ({ products: propProducts, goBack = () => window.history.back(), setProducts: setPropProducts, setCurrentPage }) => {
@@ -940,7 +939,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
                         goBack();
                     }
                 }}
-                className="mb-1 mt-0  text-sm text-stone-800/80 hover:underline flex gap-1">
+                className="mb-1 mt-0  text-sm text-stone-800/80  hover:text-amber-500 font-medium transition-colors flex gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
@@ -1137,7 +1136,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
     );
 };
 
-function ProductDetail({ id, addToCart, goBack = () => window.history.back(), setCurrentPage }) {
+function ProductDetail({ id, addToCart, handleAddToCart,toastMessage, goBack = () => window.history.back(), setCurrentPage }) {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -1195,7 +1194,7 @@ function ProductDetail({ id, addToCart, goBack = () => window.history.back(), se
                         goBack();
                     }
                 }}
-                className="mb-6 text-sm text-stone-800/80 hover:underline flex gap-2">
+                className="mb-6 text-sm text-stone-800/80  flex gap-2 hover:text-amber-500 font-medium transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
@@ -1240,7 +1239,7 @@ function ProductDetail({ id, addToCart, goBack = () => window.history.back(), se
                         <button
                             className="bg-stone-800 text-amber-100 font-bold py-3 px-6 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-50"
                             disabled={!inStock}
-                            onClick={() => addToCart(product)}
+                            onClick={() => handleAddToCart(product)}
                         >
                             Add to Cart
                         </button>
@@ -1268,6 +1267,11 @@ function ProductDetail({ id, addToCart, goBack = () => window.history.back(), se
                     </div>
                 </div>
             </div>
+            {toastMessage && (
+  <div className="fixed bottom-5 right-5 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg animate-fadeIn">
+    {toastMessage}
+  </div>
+)}
         </main>
     );
 }
@@ -1282,7 +1286,7 @@ const App = () => {
     const [authError, setAuthError] = useState('');
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     const [currentProductId, setCurrentProductId] = useState(null);
-
+    const [toastMessage, setToastMessage] = useState("");
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         const storedToken = localStorage.getItem('authToken');
@@ -1381,7 +1385,7 @@ const App = () => {
         setUser(null);
         setAuthToken(null);
         setCart([]);
-        setCurrentPage("home");
+        window.location.replace(`${import.meta.env.FRONTEND_URL}`);
     };
     const addToCart = async (product) => {
         setAuthError('');
@@ -1415,6 +1419,12 @@ const App = () => {
             console.error('addToCart error', err);
             setAuthError(err.message || 'Could not add to cart');
         }
+    };
+
+    const handleAddToCart = (product) => {
+        addToCart(product);
+        setToastMessage(`${product.name} added to cart`);
+        setTimeout(() => setToastMessage(""), 2500);
     };
 
     const fetchServerCart = async () => {
@@ -1599,15 +1609,15 @@ const App = () => {
     const renderPage = () => {
         switch (currentPage) {
             case 'home':
-                return <HomePage products={products} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} isSearchModalOpen={isSearchModalOpen} setIsSearchModalOpen={setIsSearchModalOpen} />;
+                return <HomePage products={products} toastMessage={toastMessage} handleAddToCart={handleAddToCart} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} isSearchModalOpen={isSearchModalOpen} setIsSearchModalOpen={setIsSearchModalOpen} />;
             case 'product':
-                return <ProductDetail id={currentProductId} addToCart={addToCart} setCurrentPage={setCurrentPage} />;
+                return <ProductDetail id={currentProductId} addToCart={addToCart} setCurrentPage={setCurrentPage} toastMessage={toastMessage} handleAddToCart={handleAddToCart}  />;
             case 'login':
                 return <LoginPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} />;
             case 'register':
                 return <RegisterPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} />;
             case 'profile':
-                return <ProfilePage user={user} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} />;
+                return <ProfilePage user={user} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} handleLogout={handleLogout} cart={cart} />;
             case 'admin-dashboard':
                 return <AdminDashboardPage products={products} setProducts={setProducts} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} />;
             case 'cart':
@@ -1631,7 +1641,7 @@ const App = () => {
                             </svg>
                             <span>Search</span>
                         </button>
-                        <ul className="flex space-x-6 text-amber-100">
+                        <ul className="flex space-x-6 text-amber-100 items-center">
                             <li><button onClick={() => {
                                 setCurrentPage('home');
                                 setTimeout(() => {
@@ -1642,15 +1652,30 @@ const App = () => {
                             }} className="hover:text-amber-300 font-medium transition-colors">Shop</button></li>
                             {user ? (
                                 <>
-                                    <li><button onClick={() => setCurrentPage('profile')} className="hover:text-amber-300 font-medium transition-colors">Profile</button></li>
                                     {user.isAdmin && <li><button onClick={() => setCurrentPage('admin-dashboard')} className="hover:text-amber-300 font-medium transition-colors">Admin</button></li>}
-                                    <li><button onClick={handleLogout} className="hover:text-amber-300 font-medium transition-colors">Logout</button></li>
+
+                                    <li><button onClick={() => setCurrentPage('profile')} className=" flex items-center justify-center w-7 h-7 rounded-full ">
+
+                                        <svg fill="#FFECB3" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink"
+                                            width="100px" height="100px" viewBox="0 0 45.532 45.532"
+                                            xmlSpace="preserve">
+                                            <g>
+                                                <path d="M22.766,0.001C10.194,0.001,0,10.193,0,22.766s10.193,22.765,22.766,22.765c12.574,0,22.766-10.192,22.766-22.765
+		                                                S35.34,0.001,22.766,0.001z M22.766,6.808c4.16,0,7.531,3.372,7.531,7.53c0,4.159-3.371,7.53-7.531,7.53
+		                                                c-4.158,0-7.529-3.371-7.529-7.53C15.237,10.18,18.608,6.808,22.766,6.808z M22.761,39.579c-4.149,0-7.949-1.511-10.88-4.012
+		                                                c-0.714-0.609-1.126-1.502-1.126-2.439c0-4.217,3.413-7.592,7.631-7.592h8.762c4.219,0,7.619,3.375,7.619,7.592
+		                                                c0,0.938-0.41,1.829-1.125,2.438C30.712,38.068,26.911,39.579,22.761,39.579z"/>
+                                            </g>
+                                        </svg>
+
+                                    </button></li>
                                 </>
                             ) : (
                                 <li><button onClick={() => setCurrentPage('login')} className="hover:text-amber-300 font-medium transition-colors">Login</button></li>
                             )}
+
                             <li>
-                                <button onClick={() => setCurrentPage('cart')} className="relative hover:text-amber-300 transition-colors">
+                                <button onClick={() => setCurrentPage('cart')} className="relative top-1 hover:text-amber-300 transition-colors">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.198 1.704.707 1.704H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
