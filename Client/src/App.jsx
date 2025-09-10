@@ -211,10 +211,26 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart 
                                     <p className="text-gray-500">₹{item.price.toFixed(2)}</p>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                    <button onClick={() => updateQuantity(item._id, -1)} className="w-8 h-8 rounded-full bg-gray-200 text-gray-700">-</button>
+                                    <button
+                                        onClick={() => { if (item.quantity > 1) updateQuantity(item._id, -1); }}
+                                        disabled={Number(item.quantity) <= 1}
+                                        title={Number(item.quantity) <= 1 ? "Minimum quantity reached. Use Remove to delete." : "Decrease quantity"}
+                                        className={`w-8 h-8 rounded-full transition-all ${Number(item.quantity) <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                    >
+                                        -
+                                    </button>
+
                                     <span className="font-bold">{item.quantity}</span>
-                                    <button onClick={() => updateQuantity(item._id, 1)} className="w-8 h-8 rounded-full bg-gray-200 text-gray-700">+</button>
+
+                                    <button
+                                        onClick={() => updateQuantity(item._id, 1)}
+                                        title="Increase quantity"
+                                        className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                    >
+                                        +
+                                    </button>
                                 </div>
+
                                 <button onClick={() => removeItem(item._id)} className="ml-4 text-red-500 hover:text-red-700">
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -581,7 +597,7 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
 <ProfilePage />
 
 
-const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProducts }) => {
+const AdminDashboardPage = ({ products: propProducts, goBack = () => window.history.back(), setProducts: setPropProducts, setCurrentPage }) => {
 
     const [localProducts, setLocalProducts] = useState(propProducts || []);
     const setGlobalProducts = typeof setPropProducts === 'function' ? setPropProducts : setLocalProducts;
@@ -745,7 +761,23 @@ const AdminDashboardPage = ({ products: propProducts, setProducts: setPropProduc
     };
     return (
         <main className="flex-grow container mx-auto p-8">
+            <button
+                onClick={() => {
+                    if (typeof setCurrentPage === "function") {
+                        setCurrentPage("home");
+                    } else {
+                        goBack();
+                    }
+                }}
+                className="mb-1 mt-0  text-sm text-stone-800/80 hover:underline flex gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5" />
+                    <path d="M12 19L5 12L12 5" />
+                    <title>back</title>
+                </svg> <span className='font-bold'>Back</span>
+            </button>
             <h2 className="text-3xl font-bold text-center mb-8">Admin Dashboard</h2>
+
 
             <div className="bg-white p-8 rounded-xl shadow-lg mb-8">
                 <h3 className="text-2xl font-bold mb-4">{editingProduct ? 'Edit Product' : 'Create New Product'}</h3>
@@ -992,9 +1024,12 @@ function ProductDetail({ id, addToCart, goBack = () => window.history.back(), se
                         goBack();
                     }
                 }}
-                className="mb-6 text-sm text-stone-800/80 hover:underline"
-            >
-                ← Back
+                className="mb-6 text-sm text-stone-800/80 hover:underline flex gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5" />
+                    <path d="M12 19L5 12L12 5" />
+                    <title>back</title>
+                </svg> <span className='font-bold'>Back</span>
             </button>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-white p-8 rounded-xl shadow-lg">
@@ -1193,6 +1228,7 @@ const App = () => {
             return;
         }
         try {
+            console.debug('addToCart request', { productId: product._id, qty: 1 });
             const res = await fetch(`${API_BASE}/cart/add`, {
                 method: 'POST',
                 credentials: 'include',
@@ -1267,50 +1303,67 @@ const App = () => {
             console.error('mergeLocalCartOnLogin error', err);
         }
     };
+
     const updateQuantity = async (productId, change) => {
+        if (Number(change) === 0) return;
         if (!user) {
-            setCart((prev) =>
+            setCart(prev =>
                 prev
-                    .map((item) =>
+                    .map(item =>
                         item._id === productId
                             ? { ...item, quantity: Math.max(0, Number(item.quantity || 0) + Number(change)) }
                             : item
                     )
-                    .filter((item) => Number(item.quantity) > 0)
+                    .filter(item => Number(item.quantity) > 0)
             );
             return;
         }
-        const curr = cart.find((i) => i._id === productId);
-        const currQty = Number(curr?.quantity || 0);
-        const newQty = Math.max(0, currQty + Number(change));
 
+        // Logged-in: get current item
+        const curr = cart.find(i => i._id === productId);
+        if (!curr) return;
+
+        const prevQty = Number(curr.quantity || 0);
+        const newQty = prevQty + Number(change);
+
+        // if new qty would be 0 or less, remove from server
         if (newQty <= 0) {
             await handleServerRemove(productId);
             return;
         }
+
+        // optimistic UI update
+        setCart(prev => prev.map(item => item._id === productId ? { ...item, quantity: newQty } : item));
+
         try {
+            // IMPORTANT: send **delta** (change) — not absolute newQty,
+            // because API /cart/add expects an increment amount (like addToCart does).
+            // Send numeric change so server increments/decrements correctly.
+            console.debug('updateQuantity request', { productId, change: Number(change) });
             const res = await fetch(`${API_BASE}/cart/add`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, quantity: newQty }),
+                body: JSON.stringify({ productId, quantity: Number(change) }), // <-- send change (±1)
             });
             if (!res.ok) {
                 const text = await res.text().catch(() => '');
                 throw new Error(`Update quantity failed: ${res.status} ${text}`);
             }
+            // refresh canonical server cart
             await fetchServerCart();
         } catch (err) {
             console.error('updateQuantity error', err);
-            setCart((prev) =>
+            // rollback to previous server quantity we read (prevQty)
+            setCart(prev =>
                 prev
-                    .map((item) =>
-                        item._id === productId ? { ...item, quantity: Math.max(0, Number(item.quantity || 0) + Number(change)) } : item
-                    )
-                    .filter((item) => Number(item.quantity) > 0)
+                    .map(item => item._id === productId ? { ...item, quantity: prevQty } : item)
+                    .filter(item => Number(item.quantity) > 0)
             );
         }
     };
+
+
     const handleServerRemove = async (productId) => {
         try {
             const res = await fetch(`${API_BASE}/cart/remove/${productId}`, {
@@ -1384,7 +1437,7 @@ const App = () => {
             case 'profile':
                 return <ProfilePage user={user} authToken={authToken} setAuthError={setAuthError} />;
             case 'admin-dashboard':
-                return <AdminDashboardPage products={products} setProducts={setProducts} authToken={authToken} setAuthError={setAuthError} />;
+                return <AdminDashboardPage products={products} setProducts={setProducts} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} />;
             case 'cart':
                 return <CartPage cart={cart} setCurrentPage={setCurrentPage} updateQuantity={updateQuantity} removeItem={removeItem} clearCart={clearCart} />;
             case 'checkout':
