@@ -124,7 +124,7 @@ const HomePage = ({ products, isLoading, setCurrentPage, addToCart, onOpen, isSe
         });
 
     return (
-        <main id="Product-section" className="flex-grow container mx-auto p-8"> 
+        <main id="Product-section" className="flex-grow container mx-auto p-8">
             <div className="text-center my-8">
                 <h1 className="text-4xl font-bold text-gray-800">Welcome to Artisan Crafts</h1>
                 <p className="mt-2 text-lg text-gray-600">Explore our amazing handcrafted goods!</p>
@@ -642,17 +642,20 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) =
                     email,
                     password,
                 }),
+                    credentials: 'include',
             });
 
             const data = await response.json();
-            console.log("Backend response:", data);
+            console.log("Backend : registration response: ", response.status, data);
 
             if (!response.ok) {
                 throw new Error(data.message || "Registration failed");
             }
-            if (!data.token) throw new Error('Server did not return a token');
+            if (!data.token) { throw new Error('Server did not return a token'); }
+
             localStorage.setItem("authToken", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
+
             setUser(data.user);
             setAuthToken(data.token);
             setCurrentPage("home");
@@ -1421,6 +1424,7 @@ const App = () => {
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
             });
+            console.log(res);
             if (!res.ok) throw new Error(`Failed to fetch server cart: ${res.status}`);
             const data = await res.json();
             const serverCart = Array.isArray(data) ? data : data.cart || data;
