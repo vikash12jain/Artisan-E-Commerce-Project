@@ -1,6 +1,7 @@
 // controllers/checkoutController.js
 const Product = require('../Models/Product.model');
 const Order = require('../Models/Order.model');
+const userModel = require('../Models/User.model')
 
 exports.checkout = async (req, res) => {
   const userId = req.user?.id || null;
@@ -63,8 +64,12 @@ const order = await Order.create({
 // --- clear the user’s cart after successful order ---
 if (userId) {
   try {
-    const Cart = require('../Models/Cart.model');
-    await Cart.deleteMany({ user: userId });
+    await userModel.findByIdAndUpdate(
+  userId,
+  { cart: [] },
+  { new: true } // returns updated doc
+);
+
   } catch (e) {
     console.warn('Failed to clear cart after checkout', e);
   }

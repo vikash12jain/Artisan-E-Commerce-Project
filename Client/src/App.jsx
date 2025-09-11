@@ -1,11 +1,40 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useRef } from 'react';
 import './app.css'
 import ProfilePage from '../Pages/Profile'
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
+const Toast = ({ message }) => {
+    if (!message) return null;
+    return (
+        <div className="fixed right-4 bottom-6 z-50">
+            <div className="bg-stone-800 text-amber-100 px-4 py-2 rounded shadow-lg">
+                {message}
+            </div>
+        </div>
+    );
+};
 
-const ProductCard = ({ product, addToCart, onOpen }) => {
+const GlobalLoading = ({ active }) => {
+    if (!active) return null;
+    return (
+        <div
+            aria-hidden={!active}
+            className="fixed inset-0 z-40 flex items-center justify-center bg-black/30"
+        >
+            <div className="bg-white/95 p-4 rounded-2xl shadow flex items-center gap-3">
+                <div className="w-8 h-8 border-4 border-amber-200 border-t-stone-800 rounded-full animate-spin"></div>
+                <span className="ml-2 text-stone-700 font-medium">Loading...</span>
+            </div>
+        </div>
+    );
+};
+
+
+const ProductCard = ({ product, addToCart, onOpen, isBusy }) => {
+    const key = `addToCart-${product._id}`;
+    const busy = !!(isBusy && isBusy(key));
+    const outOfStock = (product.quantity ?? 0) <= 0;
     return (
         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
             <div
@@ -26,10 +55,10 @@ const ProductCard = ({ product, addToCart, onOpen }) => {
                     <span className="text-xl font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
                     <button
                         onClick={() => addToCart(product)}
-                        disabled={(product.quantity ?? 0) <= 0}
-                        className={`bg-stone-800 text-amber-100 font-medium py-2 px-4 rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md ${((product.quantity ?? 0) <= 0) ? 'opacity-50 cursor-not-allowed hover:bg-stone-800' : ''}`}
+                        disabled={outOfStock || busy}
+                        className={`bg-stone-800 text-amber-100 font-medium py-2 px-4 rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md ${outOfStock || busy ? 'opacity-50 cursor-not-allowed hover:bg-stone-800' : ''}`}
                     >
-                        {(product.quantity ?? 0) > 0 ? 'Add to Cart' : 'Out of stock'}
+                        {outOfStock ? 'Out of stock' : (busy ? 'Adding…' : 'Add to Cart')}
                     </button>
 
                 </div>
@@ -105,7 +134,7 @@ const SearchModal = ({ products, onClose, addToCart, onOpen }) => {
     );
 };
 
-const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, isSearchModalOpen, setIsSearchModalOpen }) => {
+const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, isBusy, isSearchModalOpen, setIsSearchModalOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [sortOrder, setSortOrder] = useState('none');
@@ -129,8 +158,8 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
         });
 
     return (
-        <main id="Product-section" className="flex-grow container mx-auto p-8">
-            <div className="text-center my-8">
+        <main id="Product-section" className="flex-grow container mx-auto p-8  ">
+            <div className="text-center my-8 ">
                 <h1 className="text-4xl font-bold text-gray-800">Welcome to Artisan Crafts</h1>
                 <p className="mt-2 text-lg text-gray-600">Explore our amazing handcrafted goods!</p>
             </div>
@@ -174,7 +203,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
                     {isLoading ? (
                         <p className="text-center col-span-full text-gray-500">Loading products...</p>
                     ) : filteredAndSortedProducts.length > 0 ? (
-                        filteredAndSortedProducts.map(product => <ProductCard key={product._id} product={product} addToCart={() => handleAddToCart(product)} onOpen={onOpen} />)
+                        filteredAndSortedProducts.map(product => <ProductCard key={product._id} product={product} addToCart={() => handleAddToCart(product)} onOpen={onOpen} isBusy={isBusy} />)
                     ) : (
                         <p className="text-center col-span-full text-gray-500">No products found.</p>
                     )}
@@ -189,7 +218,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
     );
 };
 
-const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart, goBack = () => window.history.back(), user }) => {
+const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart, goBack = () => window.history.back(), user, isBusy, anyBusy }) => {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [candidate, setCandidate] = useState(null); // { _id, name, image }
     const [isDeleting, setIsDeleting] = useState(false);
@@ -344,11 +373,13 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                         </div>
                         <div className="mt-6 flex flex-col space-y-4">
                             <button
-                                onClick={() => { user ? setCurrentPage('checkout') : setCurrentPage('login') }}
-                                className="w-full bg-stone-800 text-amber-100 font-bold py-3 px-4 rounded-full hover:bg-stone-700 transition-colors"
-                            >
-                                Proceed to Checkout
-                            </button>
+    onClick={() => { user ? setCurrentPage('checkout') : setCurrentPage('login') }}
+    disabled={isBusy && isBusy('checkout')}
+    className={`w-full font-bold py-3 px-4 rounded-full transition-colors ${ (isBusy && isBusy('checkout')) ? 'bg-gray-200 text-gray-600 cursor-not-allowed' : 'bg-stone-800 text-amber-100 hover:bg-stone-700' }`}
+>
+    {(isBusy && isBusy('checkout')) ? 'Processing…' : 'Proceed to Checkout'}
+</button>
+
                             <button
                                 onClick={openClearConfirm}
                                 disabled={cart.length === 0}
@@ -456,7 +487,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
 };
 
 
-const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back(), handleCheckout, user }) => {
+const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back(), handleCheckout, user, isBusy }) => {
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
@@ -541,17 +572,17 @@ const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back
 
                 <button
                     onClick={handlePlaceOrder}
-                    disabled={isPlacingOrder}
+                    disabled={isPlacingOrder || (isBusy && isBusy('checkout'))}
                     className="w-full bg-stone-800 text-amber-100 font-bold py-3 px-4 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-50"
                 >
-                    {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
+                    {isPlacingOrder || (isBusy && isBusy('checkout')) ? 'Placing Order...' : 'Place Order'}
                 </button>
             </div>
         </main>
     );
 };
 
-const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
+const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, apiFetch, isBusy }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
@@ -560,29 +591,19 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
         setAuthError("");
 
         try {
-            const response = await fetch(`${API_BASE}/users/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-                credentials: 'include',
-            });
+            const data = await apiFetch('/users/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            }, { requestKey: 'login' });
 
-            const data = await response.json();
-            console.log('LOGIN response:', response.status, data);
+            if (!data.token) throw new Error('Server did not return a token');
 
-            if (!response.ok) {
-                throw new Error(data.message || "Login failed");
-            }
-            if (!data.token) {
-                throw new Error('Server did not return a token');
-            }
             localStorage.setItem("authToken", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
 
             setUser(data.user);
             setAuthToken(data.token);
             setCurrentPage("home");
-
         } catch (error) {
             console.error("Login failed:", error);
             setAuthError(error.message);
@@ -634,8 +655,9 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
                         <button
                             className="bg-stone-800 hover:bg-stone-700 text-amber-100 font-bold py-2 px-4 rounded-full"
                             type="submit"
+                            disabled={isBusy && isBusy('login')}
                         >
-                            Sign In
+                            {isBusy && isBusy('login') ? 'Signing in…' : 'Sign In'}
                         </button>
                         <button
                             onClick={() => setCurrentPage("register")}
@@ -651,7 +673,7 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
     );
 };
 
-const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, }) => {
+const RegisterPage = ({ setCurrentPage, setAuthError, setUser,apiFetch, setAuthToken, isBusy }) => {
     const [fullName, setFullName] = useState({ firstname: "", lastname: "" });
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -661,26 +683,15 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, }) 
         setAuthError("");
 
         try {
-            const response = await fetch(`${API_BASE}/users/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+            const data = await apiFetch('/users/register', {
+                method: 'POST',
                 body: JSON.stringify({
                     fullname: {
                         firstname: fullName.firstname,
                         lastname: fullName.lastname
-                    },
-                    email,
-                    password,
-                }),
-                credentials: 'include',
-            });
-
-            const data = await response.json();
-            console.log("Backend : registration response: ", response.status, data);
-
-            if (!response.ok) {
-                throw new Error(data.message || "Registration failed");
-            }
+                    }, email, password
+                })
+            }, { requestKey: 'register' });
             if (!data.token) { throw new Error('Server did not return a token'); }
 
             localStorage.setItem("authToken", data.token);
@@ -690,9 +701,18 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, }) 
             setAuthToken(data.token);
             setCurrentPage("home");
         } catch (error) {
-            console.error("Registration failed:", error);
-            setAuthError(error.message);
-        }
+  if (error.response && error.response.data) {
+    // From backend JSON
+    setAuthError(error.response.data.message);
+    console.log("remove : error.response.data.message");
+    console.error("Registration failed:", error.response.data.message);
+} else {
+    // Fallback
+    setAuthError(error.message);
+    console.log("remove 444: error.message");
+    console.error("Registration failed:", error.message);
+  }
+}
     };
 
     return (
@@ -778,8 +798,9 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, }) 
                         <button
                             className="bg-stone-800 hover:bg-stone-700 text-amber-100 font-bold py-2 px-4 rounded-full"
                             type="submit"
+                            disabled={isBusy && isBusy('register')}
                         >
-                            Register
+                            {isBusy && isBusy('register') ? 'Creating an Account...' : 'Register'}
                         </button>
                         <button
                             onClick={() => setCurrentPage("login")}
@@ -797,7 +818,7 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, }) 
 
 
 
-const AdminDashboardPage = ({ products: propProducts, goBack = () => window.history.back(), setProducts: setPropProducts, setCurrentPage }) => {
+const AdminDashboardPage = ({ products: propProducts, goBack = () => window.history.back(), setProducts: setPropProducts, setCurrentPage, apiFetch,isBusy,anyBusy }) => {
 
     const [localProducts, setLocalProducts] = useState(propProducts || []);
     const setGlobalProducts = typeof setPropProducts === 'function' ? setPropProducts : setLocalProducts;
@@ -837,27 +858,21 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
         setLoading(true);
         setError('');
         try {
-            const res = await fetch(`${API_BASE}/products`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-            });
-            if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
-            const data = await res.json();
+            const data = await apiFetch('/products', { method: 'GET' }, { requestKey: 'admin.fetchProducts' });
             setLocalProducts(data);
             if (setPropProducts) setPropProducts(data);
-            setLoading(false);
         } catch (err) {
             console.error(err);
             setError(err.message || 'Unable to fetch products');
+        } finally {
             setLoading(false);
         }
     };
 
+
     useEffect(() => {
         fetchProducts();
     }, []);
-
 
     const handleFormChange = (e) => {
         setFormState({ ...formState, [e.target.name]: e.target.value });
@@ -882,35 +897,20 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
         };
 
         try {
-            let res;
             if (editingProduct) {
-                res = await fetch(`${API_BASE}/products/${editingProduct._id}`, {
+                await apiFetch(`/products/${editingProduct._id}`, {
                     method: 'PUT',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-                if (!res.ok) {
-                    const errText = await res.text();
-                    throw new Error(`Update failed: ${res.status} ${errText}`);
-                }
-                await res.json();
+                    body: JSON.stringify(payload)
+                }, { requestKey: `admin.update-${editingProduct._id}` });
                 setMessage('Product updated successfully!');
             } else {
-
-                res = await fetch(`${API_BASE}/products`, {
+                await apiFetch('/products', {
                     method: 'POST',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-                if (!res.ok) {
-                    const errText = await res.text();
-                    throw new Error(`Create failed: ${res.status} ${errText}`);
-                }
-                await res.json();
+                    body: JSON.stringify(payload)
+                }, { requestKey: 'admin.create' });
                 setMessage('Product created successfully!');
             }
+
             await fetchProducts();
             setFormState({ name: '', sku: '', brand: '', category: '', price: '', quantity: '', color: '', description: '', image: '' });
             setEditingProduct(null);
@@ -927,15 +927,9 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
         setError('');
         setMessage('');
         try {
-            const res = await fetch(`${API_BASE}/products/${productId}`, {
-                method: 'DELETE',
-                credentials: 'include',
-            });
-            if (!res.ok) {
-                const errText = await res.text();
-                throw new Error(`Delete failed: ${res.status} ${errText}`);
-            }
+            await apiFetch(`/products/${productId}`, { method: 'DELETE' }, { requestKey: `admin.delete-${productId}` });
             setMessage('Product deleted successfully!');
+
             await fetchProducts();
         } catch (err) {
             console.error(err);
@@ -1050,21 +1044,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
                             ))}
                         </select>
 
-                        {formState.category === "Other" && (
-                            <input
-                                type="text"
-                                name="customCategory"
-                                placeholder="Enter custom category"
-                                value={customCategory}
-                                onChange={(e) => {
-                                    setCustomCategory(e.target.value);
-                                    handleFormChange({
-                                        target: { name: "category", value: e.target.value }
-                                    });
-                                }}
-                                className="border rounded px-3 py-2 w-full mt-2"
-                            />
-                        )}
+                      
                         <input
                             type="text"
                             name="color"
@@ -1102,7 +1082,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
                         <button
                             type="submit"
                             className="bg-stone-800 text-amber-100 font-bold py-2 px-4 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-50"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || (isBusy && isBusy('admin.create'))}
                         >
                             {isSubmitting ? 'Saving...' : editingProduct ? 'Update Product' : 'Create Product'}
                         </button>
@@ -1166,7 +1146,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
     );
 };
 
-function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = () => window.history.back(), setCurrentPage, user }) {
+function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = () => window.history.back(), setCurrentPage, user, apiFetch, isBusy }) {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -1182,16 +1162,7 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
             setLoading(true);
             setError("");
             try {
-                const res = await fetch(`${API_BASE}/products/${id}`, {
-                    method: "GET",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" },
-                });
-                if (!res.ok) {
-                    const txt = await res.text().catch(() => "");
-                    throw new Error(`Failed to load product (${res.status}) ${txt}`);
-                }
-                const data = await res.json();
+                const data = await apiFetch(`/products/${id}`, { method: 'GET' }, { requestKey: `fetchProduct-${id}` });
                 const p = data && (data._id ? data : data.product || data);
                 if (!cancelled) setProduct(p);
             } catch (err) {
@@ -1202,9 +1173,7 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
             }
         })();
 
-        return () => {
-            cancelled = true;
-        };
+        return () => { cancelled = true; };
     }, [id]);
 
     if (loading) return <div className="p-8">Loading product...</div>;
@@ -1213,6 +1182,8 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
 
     const available = Number(product.quantity ?? 0);
     const inStock = available > 0;
+    const addKey = `addToCart-${product._id}`;
+    const adding = !!(isBusy && isBusy(addKey));
 
     return (
         <main className="flex-grow container mx-auto p-8">
@@ -1268,10 +1239,10 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
                     <div className="flex items-center gap-4 mt-4">
                         <button
                             className="bg-stone-800 text-amber-100 font-bold py-3 px-6 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-50"
-                            disabled={!inStock}
+                            disabled={!inStock || adding}
                             onClick={() => handleAddToCart(product)}
                         >
-                            Add to Cart
+                            {adding ? 'Adding…' : 'Add to Cart'}
                         </button>
 
                         <button
@@ -1314,6 +1285,87 @@ const App = () => {
     const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
     const [currentProductId, setCurrentProductId] = useState(null);
     const [toastMessage, setToastMessage] = useState("");
+
+    const [inFlight, setInFlight] = useState({});
+    const inFlightPromisesRef = useRef({});
+
+
+    // helpers
+    const setInFlightFor = (key, val) => setInFlight(prev => ({ ...prev, [key]: val }));
+    const isBusy = (key) => !!inFlight[key];
+    const anyBusy = Object.values(inFlight).some(Boolean) || isLoading;
+
+
+    const apiFetch = async (path, options = {}, opts = {}) => {
+    // opts: { requestKey }
+    const { requestKey } = opts || {};
+
+    // if a request is already running with the same key, return the same promise
+    if (requestKey && inFlightPromisesRef.current[requestKey]) {
+        return inFlightPromisesRef.current[requestKey];
+    }
+
+    // create the request promise and store it in the ref so duplicates can reuse it
+    const requestPromise = (async () => {
+        if (requestKey) setInFlightFor(requestKey, true);
+
+        try {
+            // build headers (respect explicit headers)
+            const headers = { ...(options.headers || {}) };
+            // case-insensitive Content-Type check
+            const hasContentType = Object.keys(headers).some(k => k.toLowerCase() === 'content-type');
+            if (!hasContentType && (options.method || 'GET').toUpperCase() !== 'GET') {
+                headers['Content-Type'] = 'application/json';
+            }
+
+            const token = localStorage.getItem('authToken') || authToken;
+            if (token) headers.Authorization = `Bearer ${token}`;
+
+            const res = await fetch(`${API_BASE}${path}`, { credentials: options.credentials ?? 'include', ...options, headers });
+
+            if (res.status === 401) {
+                // session expired — friendly handling
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                setUser(null);
+                setAuthToken(null);
+                setToastMessage('Session expired — please log in again.');
+                setTimeout(() => setToastMessage(''), 3000);
+                throw new Error('Invalid email or password');
+            }
+
+            if (!res.ok) {
+                const text = await res.text().catch(() => '');
+                const message = text || `Request failed: ${res.status}`;
+                throw new Error(message);
+            }
+
+            const ct = (res.headers.get('content-type') || '').toLowerCase();
+            if (ct.includes('application/json')) return await res.json();
+            return await res.text();
+        } catch (err) {
+            // network vs other errors
+            if (err instanceof TypeError || err.message === 'Failed to fetch') {
+                throw new Error('Network error — check your internet connection.');
+            }
+            throw err;
+        } finally {
+            if (requestKey) setInFlightFor(requestKey, false);
+            // clear stored promise from ref
+            if (requestKey) delete inFlightPromisesRef.current[requestKey];
+        }
+    })();
+
+    if (requestKey) {
+        inFlightPromisesRef.current[requestKey] = requestPromise;
+    }
+
+    return requestPromise;
+};
+
+
+
+
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         const storedToken = localStorage.getItem('authToken');
@@ -1328,38 +1380,37 @@ const App = () => {
 
         (async () => {
             try {
-                const res = await fetch(`${API_BASE}/users/profile`, {
-                    headers: { Authorization: `Bearer ${storedToken}` }
-                });
-
-                if (!res.ok) {
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('user');
-                    setUser(null);
-                    setAuthToken(null);
-                    return;
-                }
-                const data = await res.json();
+                const data = await apiFetch('/users/profile', { method: 'GET' }, { requestKey: 'validateToken' });
                 const serverUser = data.user || data;
                 setUser(serverUser);
                 localStorage.setItem('user', JSON.stringify(serverUser));
             } catch (err) {
+                // apiFetch already cleared localStorage on 401 and set toast
                 console.error('Token validation failed:', err);
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('user');
                 setUser(null);
                 setAuthToken(null);
+                return;
             }
+
         })();
     }, []);
+
+    useEffect(() => {
+        if (currentPage === 'admin-dashboard' && (!user || !user.isAdmin)) {
+            setToastMessage('Access denied — admin only');
+            setTimeout(() => setToastMessage(''), 2500);
+            setCurrentPage('home');
+        }
+    }, [currentPage, user]);
+
 
     // helper to fetch & normalize products (call this from elsewhere too)
     const fetchProducts = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/products`);
-            if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
-            const data = await res.json();
+            const data = await apiFetch('/products', { method: 'GET' }, { requestKey: 'fetchProducts' });
             const normalized = (data || []).map(p => ({
                 ...p,
                 price: Number(p.price || 0),
@@ -1369,11 +1420,14 @@ const App = () => {
             return normalized;
         } catch (err) {
             console.error('fetchProducts error', err);
+            setToastMessage(err.message || 'Could not load products');
+            setTimeout(() => setToastMessage(''), 3000);
             return [];
         } finally {
             setIsLoading(false);
         }
     };
+
 
     // initially load products
     useEffect(() => {
@@ -1411,17 +1465,9 @@ const App = () => {
 
     const handleLogout = async () => {
         try {
-            const token = localStorage.getItem("authToken");
-            await fetch(`${API_BASE}/users/logout`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-            });
+            await apiFetch('/users/logout', { method: 'POST' }, { requestKey: 'logout' });
         } catch (err) {
-            console.error("Logout request failed:", err);
+            console.warn('Logout request failed:', err);
         }
         localStorage.removeItem("authToken");
         localStorage.removeItem("user");
@@ -1464,7 +1510,6 @@ const App = () => {
                 const idx = prev.findIndex(item => item._id === product._id);
                 if (idx !== -1) {
                     const currQty = Number(prev[idx].quantity || 0);
-                    // final local guard
                     if (currQty + 1 > (getProductById(product._id)?.quantity ?? Infinity)) {
                         setToastMessage(`Cannot add more than available stock`);
                         setTimeout(() => setToastMessage(""), 2000);
@@ -1476,48 +1521,44 @@ const App = () => {
                 }
                 return [...prev, { ...product, quantity: 1, price: Number(product.price || 0) }];
             });
+            setToastMessage(`${product.name} added to cart`);
+            setTimeout(() => setToastMessage(""), 2500);
             return;
         }
 
+        const key = `addToCart-${product._id}`;
         try {
-            console.debug('addToCart request', { productId: product._id, qty: 1 });
-            const res = await fetch(`${API_BASE}/cart/add`, {
+            await apiFetch('/cart/add', {
                 method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ productId: product._id, quantity: 1 }),
-            });
-            if (!res.ok) {
-                const text = await res.text().catch(() => '');
-                // surface server message (which ideally contains stock info)
-                throw new Error(text || `Add to cart failed: ${res.status}`);
-            }
+            }, { requestKey: key });
+
             await fetchServerCart();
+            setToastMessage(`${product.name} added to cart`);
+            setTimeout(() => setToastMessage(""), 2500);
         } catch (err) {
             console.error('addToCart error', err);
             setAuthError(err.message || 'Could not add to cart');
             setToastMessage(err.message || 'Could not add to cart');
             setTimeout(() => setToastMessage(""), 3000);
+            throw err;
         }
     };
 
 
-    const handleAddToCart = (product) => {
-        addToCart(product);
-        setToastMessage(`${product.name} added to cart`);
-        setTimeout(() => setToastMessage(""), 2500);
+
+    const handleAddToCart = async (product) => {
+        try {
+            await addToCart(product); // addToCart will set toast on success
+        } catch (err) {
+            console.error('handleAddToCart error:', err);
+        }
     };
+
 
     const fetchServerCart = async () => {
         try {
-            const res = await fetch(`${API_BASE}/cart`, {
-                method: 'GET',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-            });
-            console.log(res);
-            if (!res.ok) throw new Error(`Failed to fetch server cart: ${res.status}`);
-            const data = await res.json();
+            const data = await apiFetch('/cart', { method: 'GET' }, { requestKey: 'fetchServerCart' });
             const serverCart = Array.isArray(data) ? data : data.cart || data;
             const mapped = serverCart.map(ci => {
                 const prod = ci.product || ci.productId || ci.productId?.product || {};
@@ -1537,9 +1578,13 @@ const App = () => {
             return mapped;
         } catch (err) {
             console.error('fetchServerCart error', err);
+            setToastMessage(err.message || 'Could not fetch cart');
+            setTimeout(() => setToastMessage(''), 3000);
             return [];
         }
     };
+
+
     const mergeLocalCartOnLogin = async () => {
         try {
             const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -1549,12 +1594,10 @@ const App = () => {
             }
             for (const item of localCart) {
                 try {
-                    await fetch(`${API_BASE}/cart/add`, {
+                    await apiFetch('/cart/add', {
                         method: 'POST',
-                        credentials: 'include',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ productId: item._id, quantity: item.quantity || 1 }),
-                    });
+                        body: JSON.stringify({ productId: item._id, quantity: item.quantity || 1 })
+                    }, { requestKey: `mergeCart-${item._id}` });
                 } catch (err) {
                     console.error('merge item failed', item, err);
                 }
@@ -1605,17 +1648,13 @@ const App = () => {
         setCart(prev => prev.map(item => String(item._id) === String(productId) ? { ...item, quantity: newQty } : item));
 
         try {
-            const res = await fetch(`${API_BASE}/cart/add`, {
+            await apiFetch('/cart/add', {
                 method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productId, quantity: Number(change) }), // delta
-            });
-            if (!res.ok) {
-                const text = await res.text().catch(() => '');
-                throw new Error(text || `Update quantity failed: ${res.status}`);
-            }
+                body: JSON.stringify({ productId, quantity: Number(change) }),
+            }, { requestKey: `updateQty-${productId}` });
+
             await fetchServerCart();
+
         } catch (err) {
             console.error('updateQuantity error', err);
             // rollback
@@ -1632,14 +1671,7 @@ const App = () => {
 
     const handleServerRemove = async (productId) => {
         try {
-            const res = await fetch(`${API_BASE}/cart/remove/${productId}`, {
-                method: 'DELETE',
-                credentials: 'include',
-            });
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(`Server remove failed: ${res.status} ${text}`);
-            }
+            await apiFetch(`/cart/remove/${productId}`, { method: 'DELETE' }, { requestKey: `removeItem-${productId}` });
             await fetchServerCart();
         } catch (err) {
             console.error('handleServerRemove error', err);
@@ -1662,13 +1694,12 @@ const App = () => {
             return;
         }
         try {
-            const res = await fetch(`${API_BASE}/cart/clear`, { method: 'DELETE', credentials: 'include' });
-            if (res.ok) {
-                setCart([]);
-                return;
-            }
+            await apiFetch('/cart/clear', { method: 'DELETE' }, { requestKey: 'clearCart' });
+            setCart([]);
+            return;
         } catch (e) {
             console.warn('cart/clear failed', e);
+            // fallback per-item removal (keep existing fallback code but replace fetch with apiFetch)
         }
 
         // fallback - remove items one by one
@@ -1678,7 +1709,7 @@ const App = () => {
                 try {
                     const idToRemove = it.productId?._id || it.productId;
                     if (idToRemove) {
-                        await fetch(`${API_BASE}/cart/remove/${idToRemove}`, { method: 'DELETE', credentials: 'include' });
+                        await apiFetch(`/cart/remove/${idToRemove}`, { method: 'DELETE' }, { requestKey: `clearItem-${idToRemove}` });
                     }
                 } catch (e) { console.warn('Remove fallback failed', e); }
             }
@@ -1701,52 +1732,28 @@ const App = () => {
         const orderItems = cart.map(ci => ({ productId: ci._id, quantity: Number(ci.quantity || 0) }));
 
         try {
-            const res = await fetch(`${API_BASE}/checkout`, {
+            const resp = await apiFetch('/checkout', {
                 method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: orderItems, payment: paymentPayload }),
-            });
-
-            if (!res.ok) {
-                const txt = await res.text().catch(() => '');
-                throw new Error(txt || `Checkout failed: ${res.status}`);
-            }
-
-            const resp = await res.json();
+                body: JSON.stringify({ items: orderItems, payment: paymentPayload })
+            }, { requestKey: 'checkout' });
 
             // --- attempt to clear server-side cart (preferred) ---
             try {
-                // Try clearing cart using a dedicated endpoint (if supported)
-                const clearRes = await fetch(`${API_BASE}/cart/clear`, {
-                    method: 'DELETE',
-                    credentials: 'include',
-                });
-                if (!clearRes.ok) {
-                    // fallback: try to remove each item individually using server canonical cart
-                    const serverCart = await fetchServerCart(); // this will refresh setCart too
-                    for (const it of serverCart) {
-                        try {
-                            // serverCart items might include serverCartItemId or product id - attempt both
-                            const idToRemove = it.serverCartItemId || it._id || it.productId;
-                            if (idToRemove) {
-                                await fetch(`${API_BASE}/cart/remove/${idToRemove}`, {
-                                    method: 'DELETE',
-                                    credentials: 'include',
-                                });
-                            }
-                        } catch (e) {
-                            console.warn('Fallback remove failed for', it, e);
-                        }
-                    }
-                } else {
-                    // if cart/clear succeeded, ensure we refresh canonical server cart
-                    await fetchServerCart();
-                }
+                await apiFetch('/cart/clear', { method: 'DELETE' }, { requestKey: 'clearCart' });
+                await fetchServerCart();
             } catch (e) {
-                console.warn('Could not clear server cart cleanly:', e);
-                // still proceed to clear client
-                try { await fetchServerCart(); } catch (_) { /* best-effort */ }
+                // fallback remove using apiFetch per-item
+                const serverCart = await fetchServerCart();
+                for (const it of serverCart) {
+                    try {
+                        const idToRemove = it.serverCartItemId || it._id || it.productId;
+                        if (idToRemove) {
+                            await apiFetch(`/cart/remove/${idToRemove}`, { method: 'DELETE' }, { requestKey: `clearItem-${idToRemove}` });
+                        }
+                    } catch (ee) {
+                        console.warn('Fallback remove failed for', it, ee);
+                    }
+                }
             }
 
             // --- clear client-side cart (both for logged-in and guest) ---
@@ -1766,10 +1773,8 @@ const App = () => {
             setToastMessage(err.message || 'Checkout failed. Please try again.');
             setTimeout(() => setToastMessage(''), 3500);
 
-            // refresh canonical server state (cart + products)
-            try { await fetchServerCart(); } catch (_) { }
-            try { await fetchProducts(); } catch (_) { }
-
+            await fetchServerCart().catch(() => { });
+            await fetchProducts().catch(() => { });
             throw err;
         }
     };
@@ -1780,29 +1785,34 @@ const App = () => {
     const renderPage = () => {
         switch (currentPage) {
             case 'home':
-                return <HomePage products={products} toastMessage={toastMessage} handleAddToCart={handleAddToCart} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} isSearchModalOpen={isSearchModalOpen} setIsSearchModalOpen={setIsSearchModalOpen} />;
+                return <HomePage products={products} toastMessage={toastMessage} handleAddToCart={handleAddToCart} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} isSearchModalOpen={isSearchModalOpen} setIsSearchModalOpen={setIsSearchModalOpen} isBusy={isBusy}
+                    anyBusy={anyBusy} />;
             case 'product':
-                return <ProductDetail id={currentProductId} addToCart={addToCart} setCurrentPage={setCurrentPage} toastMessage={toastMessage} handleAddToCart={handleAddToCart} user={user} />;
+                return <ProductDetail id={currentProductId} addToCart={addToCart} setCurrentPage={setCurrentPage} toastMessage={toastMessage} handleAddToCart={handleAddToCart} user={user}
+                    apiFetch={apiFetch}
+                    isBusy={isBusy} />;
             case 'login':
-                return <LoginPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} />;
+                return <LoginPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} apiFetch={apiFetch} isBusy={isBusy} />;
             case 'register':
-                return <RegisterPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} />;
+                return <RegisterPage setCurrentPage={setCurrentPage} setAuthError={setAuthError} setUser={setUser} setAuthToken={setAuthToken} apiFetch={apiFetch} isBusy={isBusy} />;
             case 'profile':
                 return <ProfilePage user={user} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} handleLogout={handleLogout} cart={cart} />;
             case 'admin-dashboard':
-                return <AdminDashboardPage products={products} setProducts={setProducts} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} />;
+                return <AdminDashboardPage products={products} setProducts={setProducts} authToken={authToken} setAuthError={setAuthError} setCurrentPage={setCurrentPage} apiFetch={apiFetch} isBusy={isBusy} anyBusy={anyBusy} />;
             case 'cart':
-                return <CartPage cart={cart} setCurrentPage={setCurrentPage} updateQuantity={updateQuantity} removeItem={removeItem} clearCart={clearCart} user={user} />;
+                return <CartPage cart={cart} setCurrentPage={setCurrentPage} updateQuantity={updateQuantity} removeItem={removeItem} clearCart={clearCart} user={user} isBusy={isBusy} anyBusy={anyBusy} />;
             case 'checkout':
-                return <CheckoutPage cart={cart} setCurrentPage={setCurrentPage} handleCheckout={handleCheckout} user={user} />;
+                return <CheckoutPage cart={cart} setCurrentPage={setCurrentPage} handleCheckout={handleCheckout} user={user} isBusy={isBusy} />;
             default:
-                return <HomePage products={products} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} />;
+                return <HomePage products={products} isLoading={isLoading} setCurrentPage={setCurrentPage} addToCart={addToCart} isBusy={isBusy} anyBusy={anyBusy} />;
         }
     };
 
     return (
         <div className=" hide-scrollbar min-h-screen flex flex-col font-sans">
-            <header className="bg-stone-800 shadow-md">
+            <Toast message={toastMessage} />
+            <GlobalLoading active={anyBusy} />
+            <header className="bg-stone-800 shadow-md  fixed top-0 left-0 right-0 z-50">
                 <div className="container mx-auto px-4 flex justify-between items-center py-4">
                     <a href="#" onClick={() => setCurrentPage('home')} className="text-amber-100 text-2xl font-serif font-bold tracking-widest">ARTISAN</a>
                     <nav className='flex items-center space-x-6'>
@@ -1859,10 +1869,10 @@ const App = () => {
                     </nav>
                 </div>
             </header>
-
+<div className='pt-12 flex-1'>
             {currentPage === 'home' && (
-                <div className="relative w-full h-92 sm:h-[400px] md:h-[500px] lg:h-[650px] overflow-hidden">
-                    <img src="https://media.craftmaestros.com/media/magefan_blog/Elevate_Your_Home_Decor_With_Craft_Maestros.jpg" alt="Hero" className="absolute top-[-220px] w-full h-[calc(100% + 200px)] object-cover" />
+                <div className="relative w-full h-92 sm:h-[400px] md:h-[500px] lg:h-[688px] overflow-hidden">
+                    <img src="https://media.craftmaestros.com/media/magefan_blog/Elevate_Your_Home_Decor_With_Craft_Maestros.jpg" alt="Hero" className="absolute top-[-190px] w-full h-[calc(100% + 400px)] object-cover" />
                     <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center">
                         <div className="text-center text-white px-4 max-w-3xl">
                             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-extrabold mb-4 leading-tight tracking-wide">Handcrafted Goods for a Thoughtful Home</h1>
@@ -1889,7 +1899,7 @@ const App = () => {
             )}
             {renderPage()}
             {isSearchModalOpen && <SearchModal products={products} onClose={() => setIsSearchModalOpen(false)} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} />}
-
+</div>
             <footer className="bg-stone-900 text-amber-100 py-6 mt-auto">
                 <div className='flex flex-col items-center'>
                     <h3 className="text-xl font-bold font-serif text-white ">ARTISAN</h3>
