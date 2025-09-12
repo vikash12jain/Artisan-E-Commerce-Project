@@ -1487,7 +1487,7 @@ const App = () => {
         setUser(null);
         setAuthToken(null);
         setCart([]);
-        window.location.replace(`${import.meta.env.FRONTEND_URL}`);
+        window.location.replace(`${import.meta.env.VITE_FRONTEND_URL}`);
     };
 
     const getProductById = (id) => products.find(p => String(p._id) === String(id));
