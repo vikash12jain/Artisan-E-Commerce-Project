@@ -15,10 +15,10 @@ const app = express();
 app.use(express.json()); 
 app.use(bodyParser.json());
 app.use(cookieParser()); 
-
+const clientOrigin = process.env.CLIENT_ORIGIN || '*';
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: clientOrigin,
     credentials: true,
   })
 );
