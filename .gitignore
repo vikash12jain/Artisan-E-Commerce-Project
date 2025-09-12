@@ -53,3 +53,5 @@ coverage/
 *.sublime-workspace
 *.sublime-project
 *.swp
+# ignore seeder from git
+Server/Seeder/

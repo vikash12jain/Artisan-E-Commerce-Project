@@ -9,8 +9,8 @@ mongoose.connect(process.env.MONGO_URL)
     console.error('MongoDB connection error:', err);
     process.exit(1);
   });
-const AdminEmail ='Admin@gmail.com';
-const Adminpass = 'Admin@gmail.com';
+const AdminEmail ='admin@artisanstore.com';
+const Adminpass = '4r@6%4^ol10a';
 
 const seedAdminUser = async () => {
   try {
@@ -29,8 +29,8 @@ const seedAdminUser = async () => {
 
     const admin = await User.create({
       fullname: {
-        firstname: "Admin",
-        lastname: "Boss",
+        firstname: "Site",
+        lastname: "Administrator",
       },
       email: `${AdminEmail}`,
       password: `${Adminpass}`,
