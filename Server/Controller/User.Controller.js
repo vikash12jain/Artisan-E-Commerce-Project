@@ -4,7 +4,6 @@ const UserModel = require('../Models/User.model');
 const BlacklistToken = require('../Models/BlackListToken.model');
 
 const JWT_SECRET = process.env.JWT_SECRET;
-console.log(JWT_SECRET);
 const generateToken = (id) => {
     return jwt.sign({ id }, JWT_SECRET, {
         expiresIn: '24h',
