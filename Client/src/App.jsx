@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import './app.css'
+import './App.css'
 import ProfilePage from '../Pages/Profile'
 
 const API_BASE = import.meta.env.VITE_API_URL;
