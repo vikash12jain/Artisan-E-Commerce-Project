@@ -17,7 +17,6 @@ app.use(bodyParser.json());
 app.use(cookieParser()); 
 const clientOrigin = process.env.CLIENT_ORIGIN || '*';
 
-console.log("Render ENV MONGO_URL:", process.env.MONGO_URL);
 
 
 app.use(
