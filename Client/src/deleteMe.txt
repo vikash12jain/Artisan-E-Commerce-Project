@@ -50,6 +50,40 @@ GET_CART = `${API_BASE}/cart`;
 
 
 
+
+
+bro listen i have applied the change still i think their more changes required in the ui for responsiveness i have saw many ui glitch
+i will list some thing i faced 
+-> the search bar, filter ui are not responsive at all 
+-> the cart must be out along with search icon (as normal eccomerce website have )
+-> can we change icon of menu bread to X when need to close or if we touch out of screen it get close something like that
+-> the price tags also big for small screens
+-> and add to cart make lit bit small for small screen
+-> and i think the font size in some places we need to reduce 
+-> and i noticed the back button all over is going top i think due to nav bar fixed 
+ and their might be many more issue you figure it out 
+
+"very very important : as we need to be very carefull this time and i would like do all manually when you do change in before and after way , you below list that changes (update we made ): and then you paste whole single line and you this for all eve for single line like i cant take risk here by pasting or replacing whole code (hope you understand) so i need manually update it line by then only it work correctly " -> i means do the all update along in one response only but still need to be in my notice so please follow first i will give the 1st part of code as you our app.jsx have more than 2000 codes and our project is SPA so i cant paste all in one so first we will solve the problem of 1st part of code then we will later figure out the second part code 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");

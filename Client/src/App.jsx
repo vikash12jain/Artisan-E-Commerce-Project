@@ -1,4 +1,4 @@
-import { useState, useEffect,useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './app.css'
 import ProfilePage from '../Pages/Profile'
 
@@ -38,7 +38,7 @@ const ProductCard = ({ product, addToCart, onOpen, isBusy }) => {
     return (
         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
             <div
-                className="w-full h-64 overflow-hidden cursor-pointer"
+                className="w-full h-40 sm:h-64 overflow-hidden cursor-pointer"
                 onClick={() => onOpen && onOpen(product._id)}
             >
                 <img src={
@@ -50,13 +50,16 @@ const ProductCard = ({ product, addToCart, onOpen, isBusy }) => {
             </div>
             <div className="p-4">
                 <p className="text-gray-500 text-sm mt-1">{product.category}</p>
-                <h3 onClick={() => onOpen && onOpen(product._id)} className="text-lg font-semibold text-gray-800 mt-2 cursor-pointer">{product.name}</h3>
+                <h3 onClick={() => onOpen && onOpen(product._id)} className="text-base sm:text-lg font-semibold text-gray-800 mt-2 cursor-pointer">{product.name}</h3>
                 <div className="flex items-center justify-between mt-4">
-                    <span className="text-xl font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
+                    <span className="text-sm sm:text-xl font-normal sm:font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
+
                     <button
                         onClick={() => addToCart(product)}
                         disabled={outOfStock || busy}
-                        className={`bg-stone-800 text-amber-100 font-medium py-2 px-4 rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md ${outOfStock || busy ? 'opacity-50 cursor-not-allowed hover:bg-stone-800' : ''}`}
+                        className={`bg-stone-800 text-amber-100 font-medium py-1 px-2 sm:py-2 sm:px-4 text-sm sm:text-base rounded-full hover:bg-stone-700 transition-colors duration-300 shadow-md w-1/3 sm:w-auto ${outOfStock || busy ? 'opacity-50 cursor-not-allowed hover:bg-stone-800' : ''}`}
+
+
                     >
                         {outOfStock ? 'Out of stock' : (busy ? 'Adding…' : 'Add to Cart')}
                     </button>
@@ -71,10 +74,8 @@ const ProductCard = ({ product, addToCart, onOpen, isBusy }) => {
 const SearchModal = ({ products, onClose, addToCart, onOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        document.body.style.overflow = 'hidden';
-        return () => { document.body.style.overflow = 'auto'; };
-    }, []);
+    useEffect(() => { document.body.style.overflow = 'hidden'; const onKey = (e) => { if (e.key === 'Escape') onClose(); }; window.addEventListener('keydown', onKey); return () => { document.body.style.overflow = 'auto'; window.removeEventListener('keydown', onKey); }; }, []);
+
 
 
     const filteredProducts = products.filter(product =>
@@ -82,9 +83,10 @@ const SearchModal = ({ products, onClose, addToCart, onOpen }) => {
     );
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto" onScroll={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto" onClick={onClose} onScroll={(e) => e.stopPropagation()}>
 
-            <div className="bg-white rounded-xl w-full max-w-lg p-6 shadow-lg relative">
+            <div className="bg-white rounded-xl w-full max-w-lg mx-4 sm:mx-auto p-6 shadow-lg relative" onClick={(e) => e.stopPropagation()}>
+
 
                 <div className="p-4 border-b flex justify-between items-center">
                     <input
@@ -158,28 +160,29 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
         });
 
     return (
-        <main id="Product-section" className="flex-grow container mx-auto p-8  ">
-            <div className="text-center my-8 ">
-                <h1 className="text-4xl font-bold text-gray-800">Welcome to Artisan Crafts</h1>
-                <p className="mt-2 text-lg text-gray-600">Explore our amazing handcrafted goods!</p>
+        <main id="Product-section" className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 ">
+
+            <div className="text-center my-8 mt-0 ">
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 ">Welcome to Artisan Crafts</h1>
+                <p className="mt-2 text-base sm:text-lg text-gray-600">Explore our amazing handcrafted goods!</p>
             </div>
 
             <div className="flex flex-col md:flex-row  my-8 space-y-4 justify-between items-center md:space-y-0 md:space-x-4">
                 <button
                     onClick={() => setIsSearchModalOpen(true)}
-                    className="w-full md:w-1/6 text-stone-800 border border-gray-300 rounded-full px-4 py-2 flex items-center justify-start gap-2 hover:bg-gray-100"
+                    className="w-36 sm:w-1/2 md:w-1/6 text-stone-800 border border-gray-300 rounded-full px-3 py-2 flex items-center justify-start gap-2 hover:bg-gray-100 text-sm"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <span>Search</span>
+                    <span className=" font-light sm:font-normal  sm:inline">Search</span>
                 </button>
 
                 <div className='flex gap-3'>
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="w-21  p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                        className="w-28 sm:w-36 text-sm p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
                     >
                         {allCategories.map(category => (
                             <option key={category} value={category}>{category}</option>
@@ -188,7 +191,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
                     <select
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
-                        className="w-21 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                        className="w-28 sm:w-36 text-sm p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
                     >
                         <option value="none">Sort by Price</option>
                         <option value="lowToHigh">Price: Low to High</option>
@@ -199,7 +202,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
 
             <section className="my-16">
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">All Products</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {isLoading ? (
                         <p className="text-center col-span-full text-gray-500">Loading products...</p>
                     ) : filteredAndSortedProducts.length > 0 ? (
@@ -281,7 +284,9 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     return (
-        <main className="flex-grow container mx-auto p-8">
+        <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+
+
             <button
                 onClick={() => {
                     if (typeof setCurrentPage === "function") {
@@ -290,7 +295,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                         goBack();
                     }
                 }}
-                className="mb-1 mt-0  text-sm text-stone-800/80 hover:text-amber-500 font-medium transition-colors flex gap-1">
+                className="mb-1 mt-16 sm:mt-0 relative z-20 text-sm text-stone-800/80 hover:text-amber-500 font-medium transition-colors flex gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
@@ -309,7 +314,8 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-4">
                         {cart.map(item => (
-                            <div key={item._id} className="flex items-center bg-white p-4 rounded-xl shadow-sm">
+                            <div key={item._id} className="flex flex-col sm:flex-row items-center bg-white p-4 rounded-xl shadow-sm">
+
                                 <div className="w-24 h-24 flex-shrink-0 mr-4">
                                     <img src={
                                         item.image ||
@@ -319,7 +325,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                                     } alt={item.name} className="w-full h-full object-cover rounded-md" />
                                 </div>
                                 <div className="flex-grow">
-                                    <h3 className="font-semibold text-lg">{item.name}</h3>
+                                    <h3 className="font-semibold text-base sm:text-lg">{item.name}</h3>
                                     <p className="text-gray-500">₹{item.price.toFixed(2)}</p>
                                 </div>
                                 <div className="flex items-center space-x-2">
@@ -373,12 +379,12 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                         </div>
                         <div className="mt-6 flex flex-col space-y-4">
                             <button
-    onClick={() => { user ? setCurrentPage('checkout') : setCurrentPage('login') }}
-    disabled={isBusy && isBusy('checkout')}
-    className={`w-full font-bold py-3 px-4 rounded-full transition-colors ${ (isBusy && isBusy('checkout')) ? 'bg-gray-200 text-gray-600 cursor-not-allowed' : 'bg-stone-800 text-amber-100 hover:bg-stone-700' }`}
->
-    {(isBusy && isBusy('checkout')) ? 'Processing…' : 'Proceed to Checkout'}
-</button>
+                                onClick={() => { user ? setCurrentPage('checkout') : setCurrentPage('login') }}
+                                disabled={isBusy && isBusy('checkout')}
+                                className={`w-full font-bold py-3 px-4 rounded-full transition-colors ${(isBusy && isBusy('checkout')) ? 'bg-gray-200 text-gray-600 cursor-not-allowed' : 'bg-stone-800 text-amber-100 hover:bg-stone-700'}`}
+                            >
+                                {(isBusy && isBusy('checkout')) ? 'Processing…' : 'Proceed to Checkout'}
+                            </button>
 
                             <button
                                 onClick={openClearConfirm}
@@ -518,7 +524,7 @@ const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back
     }
 
     return (
-        <main className="flex-grow container mx-auto p-8">
+        <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
             <button
                 onClick={() => {
                     if (typeof setCurrentPage === "function") {
@@ -527,7 +533,7 @@ const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back
                         goBack();
                     }
                 }}
-                className="mb-1 mt-0  text-sm text-stone-800/80  hover:text-amber-500 font-medium transition-colors flex gap-1">
+                className="mb-1 mt-16 sm:mt-0 relative z-20 text-sm text-stone-800/80 hover:text-amber-500 font-medium transition-colors flex gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
@@ -612,7 +618,7 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, apiFet
     };
 
     return (
-        <main className="flex-grow container mx-auto p-8 flex items-center justify-center">
+        <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
 
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
                 <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
@@ -673,7 +679,7 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, apiFet
     );
 };
 
-const RegisterPage = ({ setCurrentPage, setAuthError, setUser,apiFetch, setAuthToken, isBusy }) => {
+const RegisterPage = ({ setCurrentPage, setAuthError, setUser, apiFetch, setAuthToken, isBusy }) => {
     const [fullName, setFullName] = useState({ firstname: "", lastname: "" });
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -701,22 +707,22 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser,apiFetch, setAuthT
             setAuthToken(data.token);
             setCurrentPage("home");
         } catch (error) {
-  if (error.response && error.response.data) {
-    // From backend JSON
-    setAuthError(error.response.data.message);
-    console.log("remove : error.response.data.message");
-    console.error("Registration failed:", error.response.data.message);
-} else {
-    // Fallback
-    setAuthError(error.message);
-    console.log("remove 444: error.message");
-    console.error("Registration failed:", error.message);
-  }
-}
+            if (error.response && error.response.data) {
+                // From backend JSON
+                setAuthError(error.response.data.message);
+                console.log("remove : error.response.data.message");
+                console.error("Registration failed:", error.response.data.message);
+            } else {
+                // Fallback
+                setAuthError(error.message);
+                console.log("remove 444: error.message");
+                console.error("Registration failed:", error.message);
+            }
+        }
     };
 
     return (
-        <main className="flex-grow container mx-auto p-8 flex items-center justify-center">
+        <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
 
 
             <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
@@ -818,7 +824,7 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser,apiFetch, setAuthT
 
 
 
-const AdminDashboardPage = ({ products: propProducts, goBack = () => window.history.back(), setProducts: setPropProducts, setCurrentPage, apiFetch,isBusy,anyBusy }) => {
+const AdminDashboardPage = ({ products: propProducts, goBack = () => window.history.back(), setProducts: setPropProducts, setCurrentPage, apiFetch, isBusy, anyBusy }) => {
 
     const [localProducts, setLocalProducts] = useState(propProducts || []);
     const setGlobalProducts = typeof setPropProducts === 'function' ? setPropProducts : setLocalProducts;
@@ -954,7 +960,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     return (
-        <main className="flex-grow container mx-auto p-8">
+        <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
             <button
                 onClick={() => {
                     if (typeof setCurrentPage === "function") {
@@ -963,7 +969,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
                         goBack();
                     }
                 }}
-                className="mb-1 mt-0  text-sm text-stone-800/80  hover:text-amber-500 font-medium transition-colors flex gap-1">
+                className="mb-1 mt-16 sm:mt-0 relative z-20 text-sm text-stone-800/80 hover:text-amber-500 font-medium transition-colors flex gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
@@ -973,7 +979,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
             <h2 className="text-3xl font-bold text-center mb-8">Admin Dashboard</h2>
 
 
-            <div className="bg-white p-8 rounded-xl shadow-lg mb-8">
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg mb-8">
                 <h3 className="text-2xl font-bold mb-4">{editingProduct ? 'Edit Product' : 'Create New Product'}</h3>
 
 
@@ -1044,7 +1050,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
                             ))}
                         </select>
 
-                      
+
                         <input
                             type="text"
                             name="color"
@@ -1102,45 +1108,42 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
                 </form>
             </div>
 
-            <div className="bg-white p-8 rounded-xl shadow-lg">
+            <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+
                 <h3 className="text-2xl font-bold mb-4">All Products</h3>
 
-                <div className="bg-white p-8 rounded-xl shadow-lg">
-                    <h3 className="text-2xl font-bold mb-4">All Products</h3>
+                {loading ? (
+                    <p>Loading products...</p>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
 
-                    {loading ? (
-                        <p>Loading products...</p>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {localProducts.map((product) => (
+                                    <tr key={product._id}>
+                                        <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">₹{Number(product.price || 0).toFixed(2)}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap">{product.quantity ?? '-'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                            <button onClick={() => handleEditClick(product)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                            <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                        </td>
                                     </tr>
-                                </thead>
-
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {localProducts.map((product) => (
-                                        <tr key={product._id}>
-                                            <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">₹{Number(product.price || 0).toFixed(2)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">{product.quantity ?? '-'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                                <button onClick={() => handleEditClick(product)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                                                <button onClick={() => handleDelete(product._id)} className="text-red-600 hover:text-red-900">Delete</button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </main>
     );
@@ -1186,7 +1189,7 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
     const adding = !!(isBusy && isBusy(addKey));
 
     return (
-        <main className="flex-grow container mx-auto p-8">
+        <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
             <button
                 onClick={() => {
                     if (typeof setCurrentPage === "function") {
@@ -1195,7 +1198,8 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
                         goBack();
                     }
                 }}
-                className="mb-6 text-sm text-stone-800/80  flex gap-2 hover:text-amber-500 font-medium transition-colors">
+                className="mb-2 mt-1 sm:mt-2 relative z-20 text-sm text-stone-800/80 flex gap-2 hover:text-amber-500 font-medium transition-colors"
+            >
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
@@ -1205,7 +1209,7 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 bg-white p-8 rounded-xl shadow-lg">
                 <div className="lg:col-span-1">
-                    <div className="w-full h-96 overflow-hidden rounded-lg">
+                    <div className="w-full h-64 sm:h-96 overflow-hidden rounded-lg">
                         <img
                             src={
                                 product.image ||
@@ -1224,8 +1228,8 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
                         <p className="text-sm text-gray-500">
                             {product.category} • {product.brand}
                         </p>
-                        <h1 className="text-3xl font-bold mt-2">{product.name}</h1>
-                        <p className="text-2xl font-extrabold text-stone-800 mt-4">₹{Number(product.price || 0).toFixed(2)}</p>
+                        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mt-2">{product.name}</h1>
+                        <p className="text-xl sm:text-2xl font-extrabold text-stone-800 mt-4">₹{Number(product.price || 0).toFixed(2)}</p>
                         <p className={`mt-2 font-medium ${inStock ? "text-green-600" : "text-red-500"}`}>
                             {inStock ? `In stock — ${available} available` : "Out of stock"}
                         </p>
@@ -1236,9 +1240,9 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
                         <p className="text-gray-700 whitespace-pre-line">{product.description}</p>
                     </div>
 
-                    <div className="flex items-center gap-4 mt-4">
+                    <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
                         <button
-                            className="bg-stone-800 text-amber-100 font-bold py-3 px-6 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-50"
+                            className="bg-stone-800 text-amber-100 font-bold py-2 px-4 sm:py-3 sm:px-6 rounded-full hover:bg-stone-700 transition-colors disabled:opacity-50 w-full sm:w-auto text-sm sm:text-base"
                             disabled={!inStock || adding}
                             onClick={() => handleAddToCart(product)}
                         >
@@ -1288,7 +1292,12 @@ const App = () => {
 
     const [inFlight, setInFlight] = useState({});
     const inFlightPromisesRef = useRef({});
-
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    useEffect(() => {
+        const onKey = (e) => { if (e.key === 'Escape') { setMobileMenuOpen(false); setIsSearchModalOpen(false); } };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
 
     // helpers
     const setInFlightFor = (key, val) => setInFlight(prev => ({ ...prev, [key]: val }));
@@ -1297,71 +1306,71 @@ const App = () => {
 
 
     const apiFetch = async (path, options = {}, opts = {}) => {
-    // opts: { requestKey }
-    const { requestKey } = opts || {};
+        // opts: { requestKey }
+        const { requestKey } = opts || {};
 
-    // if a request is already running with the same key, return the same promise
-    if (requestKey && inFlightPromisesRef.current[requestKey]) {
-        return inFlightPromisesRef.current[requestKey];
-    }
-
-    // create the request promise and store it in the ref so duplicates can reuse it
-    const requestPromise = (async () => {
-        if (requestKey) setInFlightFor(requestKey, true);
-
-        try {
-            // build headers (respect explicit headers)
-            const headers = { ...(options.headers || {}) };
-            // case-insensitive Content-Type check
-            const hasContentType = Object.keys(headers).some(k => k.toLowerCase() === 'content-type');
-            if (!hasContentType && (options.method || 'GET').toUpperCase() !== 'GET') {
-                headers['Content-Type'] = 'application/json';
-            }
-
-            const token = localStorage.getItem('authToken') || authToken;
-            if (token) headers.Authorization = `Bearer ${token}`;
-
-            const res = await fetch(`${API_BASE}${path}`, { credentials: options.credentials ?? 'include', ...options, headers });
-
-            if (res.status === 401) {
-                // session expired — friendly handling
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('user');
-                setUser(null);
-                setAuthToken(null);
-                setToastMessage('Session expired — please log in again.');
-                setTimeout(() => setToastMessage(''), 3000);
-                throw new Error('Invalid email or password');
-            }
-
-            if (!res.ok) {
-                const text = await res.text().catch(() => '');
-                const message = text || `Request failed: ${res.status}`;
-                throw new Error(message);
-            }
-
-            const ct = (res.headers.get('content-type') || '').toLowerCase();
-            if (ct.includes('application/json')) return await res.json();
-            return await res.text();
-        } catch (err) {
-            // network vs other errors
-            if (err instanceof TypeError || err.message === 'Failed to fetch') {
-                throw new Error('Network error — check your internet connection.');
-            }
-            throw err;
-        } finally {
-            if (requestKey) setInFlightFor(requestKey, false);
-            // clear stored promise from ref
-            if (requestKey) delete inFlightPromisesRef.current[requestKey];
+        // if a request is already running with the same key, return the same promise
+        if (requestKey && inFlightPromisesRef.current[requestKey]) {
+            return inFlightPromisesRef.current[requestKey];
         }
-    })();
 
-    if (requestKey) {
-        inFlightPromisesRef.current[requestKey] = requestPromise;
-    }
+        // create the request promise and store it in the ref so duplicates can reuse it
+        const requestPromise = (async () => {
+            if (requestKey) setInFlightFor(requestKey, true);
 
-    return requestPromise;
-};
+            try {
+                // build headers (respect explicit headers)
+                const headers = { ...(options.headers || {}) };
+                // case-insensitive Content-Type check
+                const hasContentType = Object.keys(headers).some(k => k.toLowerCase() === 'content-type');
+                if (!hasContentType && (options.method || 'GET').toUpperCase() !== 'GET') {
+                    headers['Content-Type'] = 'application/json';
+                }
+
+                const token = localStorage.getItem('authToken') || authToken;
+                if (token) headers.Authorization = `Bearer ${token}`;
+
+                const res = await fetch(`${API_BASE}${path}`, { credentials: options.credentials ?? 'include', ...options, headers });
+
+                if (res.status === 401) {
+                    // session expired — friendly handling
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('user');
+                    setUser(null);
+                    setAuthToken(null);
+                    setToastMessage('Session expired — please log in again.');
+                    setTimeout(() => setToastMessage(''), 3000);
+                    throw new Error('Invalid email or password');
+                }
+
+                if (!res.ok) {
+                    const text = await res.text().catch(() => '');
+                    const message = text || `Request failed: ${res.status}`;
+                    throw new Error(message);
+                }
+
+                const ct = (res.headers.get('content-type') || '').toLowerCase();
+                if (ct.includes('application/json')) return await res.json();
+                return await res.text();
+            } catch (err) {
+                // network vs other errors
+                if (err instanceof TypeError || err.message === 'Failed to fetch') {
+                    throw new Error('Network error — check your internet connection.');
+                }
+                throw err;
+            } finally {
+                if (requestKey) setInFlightFor(requestKey, false);
+                // clear stored promise from ref
+                if (requestKey) delete inFlightPromisesRef.current[requestKey];
+            }
+        })();
+
+        if (requestKey) {
+            inFlightPromisesRef.current[requestKey] = requestPromise;
+        }
+
+        return requestPromise;
+    };
 
 
 
@@ -1813,16 +1822,23 @@ const App = () => {
             <Toast message={toastMessage} />
             <GlobalLoading active={anyBusy} />
             <header className="bg-stone-800 shadow-md  fixed top-0 left-0 right-0 z-50">
-                <div className="container mx-auto px-4 flex justify-between items-center py-4">
-                    <a href="#" onClick={() => setCurrentPage('home')} className="text-amber-100 text-2xl font-serif font-bold tracking-widest">ARTISAN</a>
+                <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center py-4">
+                    <a href="#" onClick={() => setCurrentPage('home')} className="text-amber-100 text-xl sm:text-2xl font-serif font-bold tracking-widest">ARTISAN</a>
                     <nav className='flex items-center space-x-6'>
-                        <button onClick={() => setIsSearchModalOpen(true)} className='text-amber-100 border border-1 rounded-full px-4 py-1 flex items-center gap-2'>
+                        {/* <button onClick={() => setIsSearchModalOpen(true)} className='text-amber-100 border border-1 rounded-full px-4 py-1 flex items-center gap-2'>
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                             <span>Search</span>
-                        </button>
-                        <ul className="flex space-x-6 text-amber-100 items-center">
+                        </button> */}
+                        <div className="flex items-center gap-2 md:hidden">
+                            <button onClick={() => setCurrentPage('cart')} className="text-amber-100 p-2 rounded focus:outline-none relative" aria-label="Open cart">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.198 1.704.707 1.704H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                {cart.length > 0 && <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-stone-800 transform translate-x-1/2 -translate-y-1/2 bg-amber-100 rounded-full">{cart.length}</span>}
+                            </button>
+                            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-expanded={mobileMenuOpen} className="text-amber-100 p-2 rounded focus:outline-none" aria-label="Toggle menu">{mobileMenuOpen ? '✖' : '☰'}</button>
+                        </div>
+                        <ul className="hidden md:flex space-x-6 text-amber-100 items-center">
                             <li><button onClick={() => {
                                 setCurrentPage('home');
                                 setTimeout(() => {
@@ -1861,45 +1877,69 @@ const App = () => {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.198 1.704.707 1.704H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
                                     {cart.length > 0 && (
-                                        <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-stone-800 transform translate-x-1/2 -translate-y-1/2 bg-amber-100 rounded-full">{cart.length}</span>
+                                        <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-stone-800 transform translate-x-1/2 -translate-y-1/2 bg-amber-100 rounded-full">{cart.length}</span>
                                     )}
                                 </button>
                             </li>
                         </ul>
                     </nav>
+                   {mobileMenuOpen && (
+  <>
+    <div className="fixed inset-0 z-40" onClick={() => setMobileMenuOpen(false)} />
+    <div className="md:hidden absolute top-full right-4 mt-2 bg-stone-800 rounded-lg shadow-lg z-50 w-56" role="dialog" aria-modal="true">
+      <ul className="flex flex-col p-3 space-y-2 text-amber-100">
+        <li>
+          <button onClick={() => { setCurrentPage('home'); setMobileMenuOpen(false); document.getElementById('Product-section')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-left w-full">Shop</button>
+        </li>
+        {user ? (
+          <>
+            {user.isAdmin && <li><button onClick={() => { setCurrentPage('admin-dashboard'); setMobileMenuOpen(false); }} className="text-left w-full">Admin</button></li>}
+            <li><button onClick={() => { setCurrentPage('profile'); setMobileMenuOpen(false); }} className="text-left w-full">Profile</button></li>
+          </>
+        ) : (
+          <li><button onClick={() => { setCurrentPage('login'); setMobileMenuOpen(false); }} className="text-left w-full">Login</button></li>
+        )}
+        <li><button onClick={() => { setCurrentPage('cart'); setMobileMenuOpen(false); }} className="text-left w-full">Cart ({cart.length})</button></li>
+      </ul>
+    </div>
+  </>
+)}
+
+
                 </div>
             </header>
-<div className='pt-12 flex-1'>
-            {currentPage === 'home' && (
-                <div className="relative w-full h-92 sm:h-[400px] md:h-[500px] lg:h-[688px] overflow-hidden">
-                    <img src="https://media.craftmaestros.com/media/magefan_blog/Elevate_Your_Home_Decor_With_Craft_Maestros.jpg" alt="Hero" className="absolute top-[-190px] w-full h-[calc(100% + 400px)] object-cover" />
-                    <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center">
-                        <div className="text-center text-white px-4 max-w-3xl">
-                            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-extrabold mb-4 leading-tight tracking-wide">Handcrafted Goods for a Thoughtful Home</h1>
-                            <p className="text-base sm:text-lg md:text-xl font-light mb-8 max-w-xl mx-auto">Discover our curated collection of unique items made with intention by skilled artisans.</p>
-                            <button onClick={() => {
-                                setCurrentPage('home');
-                                setTimeout(() => {
-                                    document.getElementById("Product-section")?.scrollIntoView({
-                                        behavior: "smooth"
-                                    });
-                                }, 50);
-                            }} className="bg-amber-100 text-stone-800 px-8 py-4 rounded-full font-semibold text-lg hover:bg-white transition-colors shadow-lg">Explore the Collection</button>
+            <div className='pt-20 sm:pt-16 flex-1'>
+                {currentPage === 'home' && (
+                    <div className="relative w-full h-92 sm:h-[400px] md:h-[500px] lg:h-[688px] overflow-hidden">
+                        <img src="https://media.craftmaestros.com/media/magefan_blog/Elevate_Your_Home_Decor_With_Craft_Maestros.jpg" alt="Hero" className="absolute top-[-190px] w-full h-[calc(100% + 400px)] object-cover" />
+                        <div className="absolute inset-0 bg-stone-900/40 flex items-center justify-center">
+                            <div className="text-center text-white px-4 max-w-3xl">
+                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-extrabold mb-4 leading-tight tracking-wide">Handcrafted Goods for a Thoughtful Home</h1>
+                                <p className="text-sm sm:text-base md:text-lg font-light mb-8 max-w-xl mx-auto">Discover our curated collection of unique items made with intention by skilled artisans.</p>
+                                <button onClick={() => {
+                                    setCurrentPage('home');
+                                    setTimeout(() => {
+                                        document.getElementById("Product-section")?.scrollIntoView({
+                                            behavior: "smooth"
+                                        });
+                                    }, 50);
+                                }} className="w-full sm:w-auto bg-amber-100 text-stone-800 px-8 py-4 rounded-full font-semibold text-lg hover:bg-white transition-colors shadow-lg">Explore the Collection</button>
+
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {authError && (
-                <div className="container mx-auto px-4 mt-4">
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                        <span className="block sm:inline">{authError}</span>
+                {authError && (
+                    <div className="container mx-auto px-4 mt-4">
+                        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                            <span className="block sm:inline">{authError}</span>
+                        </div>
                     </div>
-                </div>
-            )}
-            {renderPage()}
-            {isSearchModalOpen && <SearchModal products={products} onClose={() => setIsSearchModalOpen(false)} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} />}
-</div>
+                )}
+                {renderPage()}
+                {isSearchModalOpen && <SearchModal products={products} onClose={() => setIsSearchModalOpen(false)} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} />}
+            </div>
             <footer className="bg-stone-900 text-amber-100 py-6 mt-auto">
                 <div className='flex flex-col items-center'>
                     <h3 className="text-xl font-bold font-serif text-white ">ARTISAN</h3>
