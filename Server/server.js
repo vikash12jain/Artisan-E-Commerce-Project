@@ -32,8 +32,10 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/checkout", CheckoutRoutes); 
 
 app.get('/', (req, res) => {
-    res.send('hell0 world');
+    res.send('hello world');
 });
+app.get('/health', (req, res) => res.send('ok'));
+
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 4000;
