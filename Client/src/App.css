@@ -1,11 +1,8 @@
-/* Force hiding scrollbars globally */
 html, body {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
-  overflow-y: scroll;        /* still allow scroll but hide bar */
+  -ms-overflow-style: none;  
+  scrollbar-width: none;    
+  overflow-y: scroll;   
 }
-
-/* Chrome, Safari and Opera */
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
   width: 0;

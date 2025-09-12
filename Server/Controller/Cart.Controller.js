@@ -52,7 +52,7 @@ exports.getCart = asyncHandler(async (req, res) => {
 
 exports.clearCart = asyncHandler(async (req, res) => {
   const user = req.user;
-  user.cart = []; // empty array
+  user.cart = [];
   await user.save();
   res.status(200).json({ message: "Cart cleared successfully.", cart: user.cart });
 });

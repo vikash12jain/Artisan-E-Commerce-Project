@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 
 const ProfilePage = ({ user, authToken, setAuthError, setCurrentPage, handleLogout, cart = [], goBack = () => window.history.back() }) => {
-  // logout confirmation modal state
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Normalize a friendly display name and email
   const normalizeUser = (u) => {
     if (!u) return { displayName: "", email: "" };
-    // fullname may be string or object
     let first = "", last = "";
     if (typeof u.fullname === "string") {
       const parts = u.fullname.trim().split(/\s+/);
@@ -26,11 +23,9 @@ const ProfilePage = ({ user, authToken, setAuthError, setCurrentPage, handleLogo
 
   const { displayName, email } = normalizeUser(user || {});
 
-  // cart totals (cart is passed from App)
   const cartCount = (Array.isArray(cart) ? cart.reduce((s, it) => s + (Number(it.quantity) || 1), 0) : 0);
   const cartTotal = (Array.isArray(cart) ? cart.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0) : 0);
 
-  // back button
   const handleBack = () => {
     if (typeof setCurrentPage === "function") setCurrentPage("home");
     else goBack();
@@ -39,7 +34,6 @@ const ProfilePage = ({ user, authToken, setAuthError, setCurrentPage, handleLogo
   const openLogoutConfirm = () => setConfirmLogoutOpen(true);
   const closeLogoutConfirm = () => setConfirmLogoutOpen(false);
 
-  // prefer parent's handleLogout; otherwise fallback local cleanup
   const doLogout = async () => {
     setIsLoggingOut(true);
     try {
@@ -62,7 +56,6 @@ const ProfilePage = ({ user, authToken, setAuthError, setCurrentPage, handleLogo
 
   return (
     <main className="flex-grow container mx-auto p-6">
-      {/* Back button */}
       <button
         onClick={handleBack}
         className="mb-4 text-sm text-stone-800/80 hover:underline flex items-center gap-2"
@@ -74,10 +67,7 @@ const ProfilePage = ({ user, authToken, setAuthError, setCurrentPage, handleLogo
         </svg>
         <span className="font-bold">Back</span>
       </button>
-
-      {/* Centered column container; narrower on medium+ screens */}
       <div className="w-full md:w-1/2 mx-auto max-w-3xl flex flex-col gap-6">
-        {/* PROFILE CARD (read-only: name + email) */}
         <section className="bg-white p-4 rounded-xl shadow-lg">
           <div className="flex items-center gap-4 ">
             <div className="w-16 h-16 rounded-full bg-stone-200 flex items-center justify-center text-xl font-bold text-stone-700">
@@ -91,8 +81,6 @@ const ProfilePage = ({ user, authToken, setAuthError, setCurrentPage, handleLogo
 
           
         </section>
-
-        {/* ACCOUNT LINKS CARD */}
         <section className="bg-white p-6 rounded-xl shadow-lg">
           <h3 className="text-lg font-bold mb-3">Account</h3>
           <ul className="flex flex-col gap-3">
@@ -118,8 +106,6 @@ const ProfilePage = ({ user, authToken, setAuthError, setCurrentPage, handleLogo
             </li>
           </ul>
         </section>
-
-        {/* CART PREVIEW CARD (read-only) */}
         <section className="bg-white p-6 rounded-xl shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-bold">My Cart</h3>
@@ -155,14 +141,10 @@ const ProfilePage = ({ user, authToken, setAuthError, setCurrentPage, handleLogo
             </>
           )}
         </section>
-
-        {/* LOGOUT at the very bottom */}
         <div className="w-full flex justify-center mt-6">
           <button onClick={openLogoutConfirm} className="px-5 py-2 rounded-full border text-red-600">Logout</button>
         </div>
       </div>
-
-      {/* Logout confirmation modal */}
       {confirmLogoutOpen && (
         <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/50" onClick={closeLogoutConfirm} />

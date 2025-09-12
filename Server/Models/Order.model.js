@@ -5,15 +5,15 @@ const OrderItemSchema = new mongoose.Schema({
   name: { type: String },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true },
-  subTotal: { type: Number, required: true }, // price * quantity (captured at order time)
+  subTotal: { type: Number, required: true },
 });
 
 const OrderSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // optional for guest flow
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   items: [OrderItemSchema],
   total: { type: Number, required: true },
-  status: { type: String, default: 'placed' }, // placed, paid, cancelled, refunded
-  shipping: { type: Object }, // optional shipping info snapshot
+  status: { type: String, default: 'placed' },
+  shipping: { type: Object },
   createdAt: { type: Date, default: Date.now },
 });
 

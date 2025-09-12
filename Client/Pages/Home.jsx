@@ -1,4 +1,3 @@
-// src/Pages/HomePage.jsx
 import ProductCard from "../Component/ProductCard";
 
 const HomePage = ({ products, isLoading }) => (
@@ -8,7 +7,6 @@ const HomePage = ({ products, isLoading }) => (
       <p className="mt-2 text-lg text-gray-600">Explore our amazing handcrafted goods!</p>
     </div>
 
-    {/* New Arrivals */}
     <section className="my-16">
       <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">New Arrivals</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -20,7 +18,6 @@ const HomePage = ({ products, isLoading }) => (
       </div>
     </section>
 
-    {/* Top Selling */}
     <section className="my-16">
       <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">Top Selling</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -31,8 +28,6 @@ const HomePage = ({ products, isLoading }) => (
         )}
       </div>
     </section>
-
-    {/* Browse by Craft */}
     <section className="my-16">
       <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">Browse by Craft</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

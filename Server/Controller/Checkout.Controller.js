@@ -1,4 +1,3 @@
-// controllers/checkoutController.js
 const Product = require('../Models/Product.model');
 const Order = require('../Models/Order.model');
 const userModel = require('../Models/User.model')
@@ -10,17 +9,13 @@ exports.checkout = async (req, res) => {
   if (!items.length) {
     return res.status(400).json({ message: 'Cart empty' });
   }
-
-  // --- fallback logic starts here ---
   const orderItems = [];
   let total = 0;
-  const updatedProducts = []; // track decremented products
+  const updatedProducts = [];
 
   try {
     for (const it of items) {
       const requestedQty = Number(it.quantity || 0);
-
-      // Atomically decrement if enough stock
       const updated = await Product.findOneAndUpdate(
         { _id: it.productId, quantity: { $gte: requestedQty } },
         { $inc: { quantity: -requestedQty, sold: requestedQty } },
@@ -28,7 +23,6 @@ exports.checkout = async (req, res) => {
       );
 
       if (!updated) {
-        // rollback already decremented products
         for (const u of updatedProducts) {
           await Product.updateOne(
             { _id: u.productId },
@@ -52,22 +46,18 @@ exports.checkout = async (req, res) => {
       });
       total += updated.price * requestedQty;
     }
-
-    // Create order (no transaction, just one write)
 const order = await Order.create({
   user: userId,
   items: orderItems,
   total,
   status: 'placed',
 });
-
-// --- clear the user’s cart after successful order ---
 if (userId) {
   try {
     await userModel.findByIdAndUpdate(
   userId,
   { cart: [] },
-  { new: true } // returns updated doc
+  { new: true }
 );
 
   } catch (e) {
@@ -80,7 +70,6 @@ return res.json({ order });
 
     return res.json({ order });
   } catch (err) {
-    // rollback in case of error
     for (const u of updatedProducts) {
       await Product.updateOne(
         { _id: u.productId },

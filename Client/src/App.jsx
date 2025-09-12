@@ -222,7 +222,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
 
 const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart, goBack = () => window.history.back(), user, isBusy, anyBusy }) => {
     const [confirmOpen, setConfirmOpen] = useState(false);
-    const [candidate, setCandidate] = useState(null); // { _id, name, image }
+    const [candidate, setCandidate] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [confirmClearOpen, setConfirmClearOpen] = useState(false);
     const [isClearing, setIsClearing] = useState(false);
@@ -237,15 +237,12 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
             setConfirmClearOpen(false);
         } catch (err) {
             console.error('Clear cart failed', err);
-            // optionally show toast/error
+            
         } finally {
             setIsClearing(false);
         }
     };
 
-
-
-    // close on Escape
     useEffect(() => {
         if (!confirmOpen) return;
         const onKey = (e) => {
@@ -264,12 +261,11 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
         if (!candidate) return;
         try {
             setIsDeleting(true);
-            await removeItem(candidate._id); // await the parent's removeItem
+            await removeItem(candidate._id);
             setConfirmOpen(false);
             setCandidate(null);
         } catch (err) {
             console.error('Delete failed', err);
-            // optionally show a toast / error UI here
         } finally {
             setIsDeleting(false);
         }
@@ -313,7 +309,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                     <div className="lg:col-span-2 space-y-4">
                        {cart.map(item => (
   <div key={item._id} className="flex flex-col sm:flex-row items-start bg-white p-4 rounded-xl shadow-sm">
-    {/* IMAGE: large & centered on mobile, small left on desktop */}
+    
     <div className="w-4/5 sm:w-24 h-48 sm:h-24 flex-shrink-0 mr-8 sm:mr-4 mx-auto sm:mx-0">
       <img
         src={
@@ -324,15 +320,10 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
         className="w-full h-full object-cover rounded-md"
       />
     </div>
-
-    {/* TITLE (always visible). On mobile center, on desktop left */}
     <div className="flex-1 w-full mt-3 sm:mt-0 text-center sm:text-left">
       <h3 className="font-semibold text-base sm:text-lg leading-snug">{item.name}</h3>
-      {/* Desktop price: visible on sm+ and stays where desktop expects it */}
       <p className="text-gray-500 hidden sm:block mt-2">₹{item.price.toFixed(2)}</p>
     </div>
-
-    {/* DESKTOP controls (qty + delete) — visible on sm+ */}
     <div className="hidden sm:flex items-center space-x-2 ml-3">
       <button
         onClick={() => { if (item.quantity > 1) updateQuantity(item._id, -1); }}
@@ -363,8 +354,6 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
         </svg>
       </button>
     </div>
-
-    {/* MOBILE single-row: price | qty controls | delete (visible only on mobile) */}
     <div className="flex sm:hidden w-full items-center justify-between mt-3">
       <div className="font-semibold text-gray-800">₹{item.price.toFixed(2)}</div>
 
@@ -440,8 +429,6 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                     </div>
                 </div>
             )}
-
-            {/* Confirmation Modal */}
             {confirmOpen && candidate && (
                 <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/50" onClick={handleConfirmNo} />
@@ -475,8 +462,6 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                     </div>
                 </div>
             )}
-
-            {/* Clear Cart Confirmation Modal */}
             {confirmClearOpen && (
                 <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center">
                     <div className="absolute inset-0 bg-black/50" onClick={closeClearConfirm} />
@@ -487,8 +472,6 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                                 This will remove <strong>{cart.length} item{cart.length !== 1 ? 's' : ''}</strong> from your cart
                                 {cart.length > 0 && <> (Total: ₹{cart.reduce((s, it) => s + it.price * it.quantity, 0).toFixed(2)})</>}.
                             </p>
-
-                            {/* Optional small preview: show up to 3 item thumbnails */}
                             <div className="flex gap-3 flex-col">
                                 {cart.slice(0, 3).map(it => (
                                     <div key={it._id || it.productId} className="flex gap-4 border border-green-200 rounded-lg p-2">
@@ -542,14 +525,13 @@ const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back
         event.preventDefault();
         setIsPlacingOrder(true);
         try {
-            // optionally collect payment info from form and pass as payload
-            await handleCheckout({}); // send empty payload or payment details
+           
+            await handleCheckout({}); 
             setOrderPlaced(true);
             setIsPlacingOrder(false);
         } catch (err) {
             console.error('Place order failed', err);
             setIsPlacingOrder(false);
-            // handleCheckout already shows toast & refreshes data on failure
         }
     };
 
@@ -749,12 +731,12 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, apiFetch, setAuth
             setCurrentPage("home");
         } catch (error) {
             if (error.response && error.response.data) {
-                // From backend JSON
+               
                 setAuthError(error.response.data.message);
                 console.log("remove : error.response.data.message");
                 console.error("Registration failed:", error.response.data.message);
             } else {
-                // Fallback
+              
                 setAuthError(error.message);
                 console.log("remove 444: error.message");
                 console.error("Registration failed:", error.message);
@@ -1292,7 +1274,6 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
 
                         <button
                             onClick={() => {
-                                // no-op if disabled; this won't run because button will be disabled
                                 addToCart(product);
                                 if (typeof setCurrentPage === "function") { user ? setCurrentPage("checkout") : setCurrentPage('login') }
                             }}
@@ -1340,29 +1321,21 @@ const App = () => {
         return () => window.removeEventListener('keydown', onKey);
     }, []);
 
-    // helpers
     const setInFlightFor = (key, val) => setInFlight(prev => ({ ...prev, [key]: val }));
     const isBusy = (key) => !!inFlight[key];
     const anyBusy = Object.values(inFlight).some(Boolean) || isLoading;
 
 
     const apiFetch = async (path, options = {}, opts = {}) => {
-        // opts: { requestKey }
         const { requestKey } = opts || {};
-
-        // if a request is already running with the same key, return the same promise
         if (requestKey && inFlightPromisesRef.current[requestKey]) {
             return inFlightPromisesRef.current[requestKey];
         }
-
-        // create the request promise and store it in the ref so duplicates can reuse it
         const requestPromise = (async () => {
             if (requestKey) setInFlightFor(requestKey, true);
 
             try {
-                // build headers (respect explicit headers)
                 const headers = { ...(options.headers || {}) };
-                // case-insensitive Content-Type check
                 const hasContentType = Object.keys(headers).some(k => k.toLowerCase() === 'content-type');
                 if (!hasContentType && (options.method || 'GET').toUpperCase() !== 'GET') {
                     headers['Content-Type'] = 'application/json';
@@ -1374,7 +1347,6 @@ const App = () => {
                 const res = await fetch(`${API_BASE}${path}`, { credentials: options.credentials ?? 'include', ...options, headers });
 
                 if (res.status === 401) {
-                    // session expired — friendly handling
                     localStorage.removeItem('authToken');
                     localStorage.removeItem('user');
                     setUser(null);
@@ -1394,14 +1366,12 @@ const App = () => {
                 if (ct.includes('application/json')) return await res.json();
                 return await res.text();
             } catch (err) {
-                // network vs other errors
                 if (err instanceof TypeError || err.message === 'Failed to fetch') {
                     throw new Error('Network error — check your internet connection.');
                 }
                 throw err;
             } finally {
                 if (requestKey) setInFlightFor(requestKey, false);
-                // clear stored promise from ref
                 if (requestKey) delete inFlightPromisesRef.current[requestKey];
             }
         })();
@@ -1435,7 +1405,6 @@ const App = () => {
                 setUser(serverUser);
                 localStorage.setItem('user', JSON.stringify(serverUser));
             } catch (err) {
-                // apiFetch already cleared localStorage on 401 and set toast
                 console.error('Token validation failed:', err);
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('user');
@@ -1454,9 +1423,6 @@ const App = () => {
             setCurrentPage('home');
         }
     }, [currentPage, user]);
-
-
-    // helper to fetch & normalize products (call this from elsewhere too)
     const fetchProducts = async () => {
         setIsLoading(true);
         try {
@@ -1477,9 +1443,6 @@ const App = () => {
             setIsLoading(false);
         }
     };
-
-
-    // initially load products
     useEffect(() => {
         fetchProducts();
     }, []);
@@ -1527,7 +1490,6 @@ const App = () => {
         window.location.replace(`${import.meta.env.FRONTEND_URL}`);
     };
 
-    // ---- helpers for inventory checks ----
     const getProductById = (id) => products.find(p => String(p._id) === String(id));
 
     const cartQtyFor = (productId) => {
@@ -1547,7 +1509,6 @@ const App = () => {
     const addToCart = async (product) => {
         setAuthError('');
 
-        // local check first
         if (!canAddToCart(product._id, 1)) {
             const avail = getProductById(product._id)?.quantity ?? 0;
             setToastMessage(`Only ${avail} left in stock`);
@@ -1599,7 +1560,7 @@ const App = () => {
 
     const handleAddToCart = async (product) => {
         try {
-            await addToCart(product); // addToCart will set toast on success
+            await addToCart(product);
         } catch (err) {
             console.error('handleAddToCart error:', err);
         }
@@ -1676,7 +1637,6 @@ const App = () => {
             return;
         }
 
-        // local stock guard
         const product = getProductById(productId);
         if (product && newQty > Number(product.quantity || 0)) {
             setToastMessage(`Only ${product.quantity} items available`);
@@ -1685,7 +1645,6 @@ const App = () => {
         }
 
         if (!user) {
-            // guest cart update
             setCart(prev =>
                 prev.map(item =>
                     String(item._id) === String(productId) ? { ...item, quantity: newQty } : item
@@ -1693,8 +1652,6 @@ const App = () => {
             );
             return;
         }
-
-        // optimistic update for logged-in user
         setCart(prev => prev.map(item => String(item._id) === String(productId) ? { ...item, quantity: newQty } : item));
 
         try {
@@ -1707,7 +1664,6 @@ const App = () => {
 
         } catch (err) {
             console.error('updateQuantity error', err);
-            // rollback
             setCart(prev =>
                 prev.map(item => String(item._id) === String(productId) ? { ...item, quantity: prevQty } : item)
                     .filter(item => Number(item.quantity) > 0)
@@ -1749,10 +1705,7 @@ const App = () => {
             return;
         } catch (e) {
             console.warn('cart/clear failed', e);
-            // fallback per-item removal (keep existing fallback code but replace fetch with apiFetch)
         }
-
-        // fallback - remove items one by one
         try {
             const serverCart = await fetchServerCart();
             for (const it of serverCart) {
@@ -1770,8 +1723,6 @@ const App = () => {
         }
     };
 
-
-    // --- handleCheckout: perform server checkout and refresh products/cart ---
     const handleCheckout = async (paymentPayload = {}) => {
         if (!cart || cart.length === 0) {
             setToastMessage('Cart is empty');
@@ -1787,12 +1738,10 @@ const App = () => {
                 body: JSON.stringify({ items: orderItems, payment: paymentPayload })
             }, { requestKey: 'checkout' });
 
-            // --- attempt to clear server-side cart (preferred) ---
             try {
                 await apiFetch('/cart/clear', { method: 'DELETE' }, { requestKey: 'clearCart' });
                 await fetchServerCart();
             } catch (e) {
-                // fallback remove using apiFetch per-item
                 const serverCart = await fetchServerCart();
                 for (const it of serverCart) {
                     try {
@@ -1805,18 +1754,14 @@ const App = () => {
                     }
                 }
             }
-
-            // --- clear client-side cart (both for logged-in and guest) ---
             setCart([]);
-            try { localStorage.removeItem('cart'); } catch (e) { /* ignore */ }
-
-            // refresh product list to reflect new inventory
+            try { localStorage.removeItem('cart'); } catch (e) { console.error(e.message) }
             await fetchProducts();
 
             setToastMessage('Order placed successfully!');
             setTimeout(() => setToastMessage(''), 3500);
 
-            setCurrentPage('home'); // or an orders/confirmation page
+            setCurrentPage('home');
             return resp;
         } catch (err) {
             console.error('handleCheckout error', err);
@@ -1866,12 +1811,7 @@ const App = () => {
                 <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center py-4">
                     <a href="#" onClick={() => setCurrentPage('home')} className="text-amber-100 text-xl sm:text-2xl font-serif font-bold tracking-widest">ARTISAN</a>
                     <nav className='flex items-center space-x-6'>
-                        {/* <button onClick={() => setIsSearchModalOpen(true)} className='text-amber-100 border border-1 rounded-full px-4 py-1 flex items-center gap-2'>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            <span>Search</span>
-                        </button> */}
+                      
                         <div className="flex items-center gap-2 md:hidden">
                             <button onClick={() => setCurrentPage('cart')} className="text-amber-100 p-2 rounded focus:outline-none relative" aria-label="Open cart">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.198 1.704.707 1.704H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>

@@ -8,12 +8,10 @@ const {
   deleteProduct,
 } = require("../Controller/Product.Controller");
 const { protect, adminOnly } = require("../Middleware/AdminMiddleware.authAdmin");
-
-// Routes for handling products
-router.post("/", protect, adminOnly, createProduct);// here via this route admin can post new product
+router.post("/", protect, adminOnly, createProduct);
 router.get("/", getAllProducts);
 router.get("/:id", getProduct); 
-router.put("/:id", protect, adminOnly, updateProduct); // here route for update
-router.delete("/:id", protect, adminOnly, deleteProduct); //and here for delete
+router.put("/:id", protect, adminOnly, updateProduct); 
+router.delete("/:id", protect, adminOnly, deleteProduct);
 
 module.exports = router;

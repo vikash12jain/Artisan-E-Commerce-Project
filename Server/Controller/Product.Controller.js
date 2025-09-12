@@ -7,7 +7,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
 
   if (!name || !category || !brand || !quantity || !price || !description || !image) {
     res.status(400);
-    throw new Error("Product creation failed: some fields are missing or invalid"); // if any of thr above is false or  not there then it will throw an error 
+    throw new Error("Product creation failed: some fields are missing or invalid"); 
   }
 
   const product = await Product.create({

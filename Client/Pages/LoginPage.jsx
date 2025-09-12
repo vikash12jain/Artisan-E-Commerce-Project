@@ -1,4 +1,3 @@
-// src/Pages/LoginPage.jsx
 const LoginPage = ({ setCurrentPage }) => (
   <main className="flex-grow container mx-auto p-8 flex items-center justify-center">
     <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">

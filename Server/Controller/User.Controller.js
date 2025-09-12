@@ -37,7 +37,7 @@ exports.registerUser = async (req, res) => {
                     httpOnly: true,
                     maxAge: 24 * 60 * 60 * 1000 
                 });
-                console.log(token, user) // # remove # remove # remove
+                console.log(token, user)
             res.status(200).json({
                 token,
                 user: {
