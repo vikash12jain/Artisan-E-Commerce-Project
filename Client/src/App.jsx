@@ -38,21 +38,17 @@ const ProductCard = ({ product, addToCart, onOpen, isBusy }) => {
     return (
         <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
             <div
-                className="w-full h-40 sm:h-64 overflow-hidden cursor-pointer"
+                className="w-full h-40 sm:h-64 overflow-hidden cursor-pointer flex items-center"
                 onClick={() => onOpen && onOpen(product._id)}
             >
-                <img src={
-                    product.image ||
-                    `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
-                        product.name || "Product"
-                    )}`
-                } alt={product.name} className="w-full h-full object-cover" />
+               <img src={ product.image || `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(product.name || "Product")}` } alt={product.name} className="w-full h-full object-contain sm:object-cover object-center" />
+
             </div>
             <div className="p-4">
                 <p className="text-gray-500 text-sm mt-1">{product.category}</p>
-                <h3 onClick={() => onOpen && onOpen(product._id)} className="text-base sm:text-lg font-semibold text-gray-800 mt-2 cursor-pointer">{product.name}</h3>
+                <h3 onClick={() => onOpen && onOpen(product._id)} className="text-sm sm:text-base md:text-lg font-semibold text-gray-800 mt-2 cursor-pointer">{product.name}</h3>
                 <div className="flex items-center justify-between mt-4">
-                    <span className="text-sm sm:text-xl font-normal sm:font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
+                    <span className="text-sm sm:text-lg md:text-xl font-normal sm:font-bold text-gray-800">₹{product.price.toFixed(2)}</span>
 
                     <button
                         onClick={() => addToCart(product)}
@@ -170,7 +166,8 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
             <div className="flex flex-col md:flex-row  my-8 space-y-4 justify-between items-center md:space-y-0 md:space-x-4">
                 <button
                     onClick={() => setIsSearchModalOpen(true)}
-                    className="w-36 sm:w-1/2 md:w-1/6 text-stone-800 border border-gray-300 rounded-full px-3 py-2 flex items-center justify-start gap-2 hover:bg-gray-100 text-sm"
+                    className="w-full sm:w-1/3 md:w-1/6 text-stone-800 border border-gray-300 rounded-full px-3 py-2 flex items-center justify-start gap-2 hover:bg-gray-100 text-sm"
+
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -182,7 +179,8 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="w-28 sm:w-36 text-sm p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                        className="w-full sm:w-40 md:w-36 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+
                     >
                         {allCategories.map(category => (
                             <option key={category} value={category}>{category}</option>
@@ -191,7 +189,8 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
                     <select
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value)}
-                        className="w-28 sm:w-36 text-sm p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800"
+                        className="w-full sm:w-40 md:w-36 p-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-stone-800 text-sm"
+
                     >
                         <option value="none">Sort by Price</option>
                         <option value="lowToHigh">Price: Low to High</option>
@@ -284,9 +283,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     return (
-        <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-
-
+        <main className="flex-grow container mx-auto p-8">
             <button
                 onClick={() => {
                     if (typeof setCurrentPage === "function") {
@@ -295,7 +292,8 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
                         goBack();
                     }
                 }}
-                className="mb-1 mt-16 sm:mt-0 relative z-20 text-sm text-stone-800/80 hover:text-amber-500 font-medium transition-colors flex gap-1">
+                className="mb-1 mt-0 text-sm text-stone-800/80 hover:text-amber-500 font-medium transition-colors flex gap-1">
+
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 12H5" />
                     <path d="M12 19L5 12L12 5" />
@@ -313,54 +311,97 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-4">
-                        {cart.map(item => (
-                            <div key={item._id} className="flex flex-col sm:flex-row items-center bg-white p-4 rounded-xl shadow-sm">
+                       {cart.map(item => (
+  <div key={item._id} className="flex flex-col sm:flex-row items-start bg-white p-4 rounded-xl shadow-sm">
+    {/* IMAGE: large & centered on mobile, small left on desktop */}
+    <div className="w-4/5 sm:w-24 h-48 sm:h-24 flex-shrink-0 mr-8 sm:mr-4 mx-auto sm:mx-0">
+      <img
+        src={
+          item.image ||
+          `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(item.name || "Product")}`
+        }
+        alt={item.name}
+        className="w-full h-full object-cover rounded-md"
+      />
+    </div>
 
-                                <div className="w-24 h-24 flex-shrink-0 mr-4">
-                                    <img src={
-                                        item.image ||
-                                        `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(
-                                            item.name || "Product"
-                                        )}`
-                                    } alt={item.name} className="w-full h-full object-cover rounded-md" />
-                                </div>
-                                <div className="flex-grow">
-                                    <h3 className="font-semibold text-base sm:text-lg">{item.name}</h3>
-                                    <p className="text-gray-500">₹{item.price.toFixed(2)}</p>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <button
-                                        onClick={() => { if (item.quantity > 1) updateQuantity(item._id, -1); }}
-                                        disabled={Number(item.quantity) <= 1}
-                                        title={Number(item.quantity) <= 1 ? "Minimum quantity reached. Use Remove to delete." : "Decrease quantity"}
-                                        className={`w-8 h-8 rounded-full transition-all ${Number(item.quantity) <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-                                        aria-label={Number(item.quantity) <= 1 ? "Minimum quantity" : "Decrease quantity"}
-                                    >
-                                        -
-                                    </button>
-                                    <span className="font-bold">{item.quantity}</span>
-                                    <button
-                                        onClick={() => updateQuantity(item._id, 1)}
-                                        title="Increase quantity"
-                                        className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                        aria-label="Increase quantity"
-                                    >
-                                        +
-                                    </button>
-                                </div>
+    {/* TITLE (always visible). On mobile center, on desktop left */}
+    <div className="flex-1 w-full mt-3 sm:mt-0 text-center sm:text-left">
+      <h3 className="font-semibold text-base sm:text-lg leading-snug">{item.name}</h3>
+      {/* Desktop price: visible on sm+ and stays where desktop expects it */}
+      <p className="text-gray-500 hidden sm:block mt-2">₹{item.price.toFixed(2)}</p>
+    </div>
 
-                                {/* DELETE button now opens confirm modal */}
-                                <button
-                                    onClick={() => openConfirm(item)}
-                                    className="ml-4 text-red-500 hover:text-red-700"
-                                    aria-label={`Remove ${item.name} from cart`}
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-                        ))}
+    {/* DESKTOP controls (qty + delete) — visible on sm+ */}
+    <div className="hidden sm:flex items-center space-x-2 ml-3">
+      <button
+        onClick={() => { if (item.quantity > 1) updateQuantity(item._id, -1); }}
+        disabled={Number(item.quantity) <= 1}
+        title={Number(item.quantity) <= 1 ? "Minimum quantity reached. Use Remove to delete." : "Decrease quantity"}
+        className={`w-8 h-8 rounded-full transition-all ${Number(item.quantity) <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+        aria-label={Number(item.quantity) <= 1 ? "Minimum quantity" : "Decrease quantity"}
+      >
+        -
+      </button>
+      <span className="font-bold">{item.quantity}</span>
+      <button
+        onClick={() => updateQuantity(item._id, 1)}
+        title="Increase quantity"
+        className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+        aria-label="Increase quantity"
+      >
+        +
+      </button>
+
+      <button
+        onClick={() => openConfirm(item)}
+        className="ml-4 text-red-500 hover:text-red-700"
+        aria-label={`Remove ${item.name} from cart`}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
+    </div>
+
+    {/* MOBILE single-row: price | qty controls | delete (visible only on mobile) */}
+    <div className="flex sm:hidden w-full items-center justify-between mt-3">
+      <div className="font-semibold text-gray-800">₹{item.price.toFixed(2)}</div>
+
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={() => { if (item.quantity > 1) updateQuantity(item._id, -1); }}
+          disabled={Number(item.quantity) <= 1}
+          title={Number(item.quantity) <= 1 ? "Minimum quantity reached. Use Remove to delete." : "Decrease quantity"}
+          className={`w-8 h-8 rounded-full transition-all ${Number(item.quantity) <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+          aria-label={Number(item.quantity) <= 1 ? "Minimum quantity" : "Decrease quantity"}
+        >
+          -
+        </button>
+        <span className="font-bold">{item.quantity}</span>
+        <button
+          onClick={() => updateQuantity(item._id, 1)}
+          title="Increase quantity"
+          className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+          aria-label="Increase quantity"
+        >
+          +
+        </button>
+      </div>
+
+      <button
+        onClick={() => openConfirm(item)}
+        className="text-red-500 hover:text-red-700 p-1"
+        aria-label={`Remove ${item.name} from cart`}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+))}
+
                     </div>
 
                     <div className="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg h-fit">
@@ -1940,14 +1981,14 @@ const App = () => {
                 {renderPage()}
                 {isSearchModalOpen && <SearchModal products={products} onClose={() => setIsSearchModalOpen(false)} addToCart={addToCart} onOpen={(id) => { setCurrentProductId(id); setCurrentPage('product'); }} />}
             </div>
-            <footer className="bg-stone-900 text-amber-100 py-6 mt-auto">
+            <footer className="bg-stone-900 text-amber-100 py-6 mt-auto text-xs  px-6 sm:text-base ">
                 <div className='flex flex-col items-center'>
                     <h3 className="text-xl font-bold font-serif text-white ">ARTISAN</h3>
                     <p className='text-white'>At ARTISAN, we believe every product has a story. They're all made by hand, with heart, to support the talented artists who create them.</p>
                 </div>
 
                 <div className="text-center mt-4 pt-4 border-t border-gray-700">
-                    <p className="text-sm">&copy; 2025 ARTISAN. All rights reserved.</p>
+                    <p className="text-xs sm:text-sm">&copy; 2025 ARTISAN. All rights reserved.</p>
                 </div>
             </footer>
         </div>
