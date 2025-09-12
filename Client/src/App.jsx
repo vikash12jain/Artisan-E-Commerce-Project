@@ -1299,9 +1299,9 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
                             disabled={!inStock}
                             aria-disabled={!inStock}
                             title={!inStock ? 'Available soon' : 'Buy now'}
-                            className={`py-3 px-5 border rounded-full transition-colors focus:outline-none ${!inStock
+                            className={`py-2 bg-yellow-300 px-5 border rounded-full w-full sm:w-1/6 transition-colors focus:outline-none ${!inStock
                                 ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-500'
-                                : 'hover:bg-gray-100'
+                                : 'hover:bg-gray-100' 
                                 }`}
                         >
                             {!inStock ? 'Available soon' : 'Buy Now'}
