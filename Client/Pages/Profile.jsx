@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const ProfilePage = ({ user, authToken, setAuthError, setCurrentPage, handleLogout, cart = [], goBack = () => window.history.back() }) => {
+const ProfilePage = ({ user, setAuthError, setCurrentPage, handleLogout, cart = [], goBack = () => window.history.back() }) => {
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 

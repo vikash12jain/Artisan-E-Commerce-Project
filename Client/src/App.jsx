@@ -4,7 +4,7 @@ import ProfilePage from '../Pages/Profile'
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
-const Toast = ({ message }) => {
+const ToastAlert = ({ message }) => {
     if (!message) return null;
     return (
         <div className="fixed right-4 bottom-6 z-50">
@@ -67,7 +67,7 @@ const ProductCard = ({ product, addToCart, onOpen, isBusy }) => {
 }
 
 
-const SearchModal = ({ products, onClose, addToCart, onOpen }) => {
+const SearchModal = ({ products, onClose,onOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => { document.body.style.overflow = 'hidden'; const onKey = (e) => { if (e.key === 'Escape') onClose(); }; window.addEventListener('keydown', onKey); return () => { document.body.style.overflow = 'auto'; window.removeEventListener('keydown', onKey); }; }, []);
@@ -132,7 +132,7 @@ const SearchModal = ({ products, onClose, addToCart, onOpen }) => {
     );
 };
 
-const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, isBusy, isSearchModalOpen, setIsSearchModalOpen }) => {
+const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, isBusy, setIsSearchModalOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [sortOrder, setSortOrder] = useState('none');
@@ -220,7 +220,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
     );
 };
 
-const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart, goBack = () => window.history.back(), user, isBusy, anyBusy }) => {
+const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart, goBack = () => window.history.back(), user, isBusy }) => {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [candidate, setCandidate] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -517,7 +517,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
 };
 
 
-const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back(), handleCheckout, user, isBusy }) => {
+const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back(), handleCheckout, isBusy }) => {
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
     const [orderPlaced, setOrderPlaced] = useState(false);
@@ -847,10 +847,9 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, apiFetch, setAuth
 
 
 
-const AdminDashboardPage = ({ products: propProducts, goBack = () => window.history.back(), setProducts: setPropProducts, setCurrentPage, apiFetch, isBusy, anyBusy }) => {
+const AdminDashboardPage = ({ products: propProducts, goBack = () => window.history.back(), setProducts: setPropProducts, setCurrentPage, apiFetch, isBusy }) => {
 
     const [localProducts, setLocalProducts] = useState(propProducts || []);
-    const setGlobalProducts = typeof setPropProducts === 'function' ? setPropProducts : setLocalProducts;
     const [error, setError] = useState('');
 
     const [formState, setFormState] = useState({
@@ -1696,7 +1695,7 @@ const App = () => {
     const clearCart = async () => {
         if (!user) {
             setCart([]);
-            try { localStorage.removeItem('cart'); } catch (_) { }
+            try { localStorage.removeItem('cart'); } catch (e) { console.error(e)}
             return;
         }
         try {
@@ -1805,7 +1804,7 @@ const App = () => {
 
     return (
         <div className=" hide-scrollbar min-h-screen flex flex-col font-sans">
-            <Toast message={toastMessage} />
+            <ToastAlert message={toastMessage} />
             <GlobalLoading active={anyBusy} />
             <header className="bg-stone-800 shadow-md  fixed top-0 left-0 right-0 z-50">
                 <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center py-4">
