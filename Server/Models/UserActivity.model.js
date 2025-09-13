@@ -1,18 +1,18 @@
 const mongoose = require('mongoose');
 
 const userActivitySchema = new mongoose.Schema({
-  userId: { 
-  type: mongoose.Schema.Types.ObjectId, 
-  ref: 'User', 
-},
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
   fullname: {
     firstname: String,
     lastname: String
   },
   isAdmin: {
-        type: Boolean,
-        default: false
-},
+    type: Boolean,
+    default: false
+  },
   email: String,
   route: String,
   method: String,

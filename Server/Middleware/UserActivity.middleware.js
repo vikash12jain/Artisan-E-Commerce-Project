@@ -3,7 +3,7 @@ exports.logUserActivity = async (req, res, next) => {
     try {
         
         if (req.user) {
-            await UserActivity.create({
+                await UserActivity.create({
                 userId: req.user._id,
                 fullname: req.user.fullname,
                 email: req.user.email,
