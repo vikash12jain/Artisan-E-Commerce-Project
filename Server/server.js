@@ -20,7 +20,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: ["https://your-netlify-site.netlify.app","http://localhost:5173"],
+    origin: ["https://artisan-no-need-store.netlify.app","http://localhost:5173"],
     credentials: true,
   })
 );
