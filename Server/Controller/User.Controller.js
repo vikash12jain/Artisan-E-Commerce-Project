@@ -33,11 +33,13 @@ exports.registerUser = async (req, res) => {
 
         if (user) {
             const token = generateToken(user._id);
-             res.cookie('token', token, {
-                    httpOnly: true,
-                    maxAge: 24 * 60 * 60 * 1000 
-                });
-                console.log(token, user)
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "None",
+                maxAge: 24 * 60 * 60 * 1000
+            });
+            console.log(token, user)
             res.status(200).json({
                 token,
                 user: {
@@ -72,32 +74,34 @@ exports.loginUser = async (req, res) => {
     try {
         const user = await UserModel.findOne({ email }).select('+password');
         if (!user) {
-          return  res.status(401).send('Invalid email or password' );
+            return res.status(401).send('Invalid email or password');
         }
 
-            const isPassowordMatched = await user.ComparePassword(password);
-            if (user && isPassowordMatched) {
-                const token = generateToken(user._id);
-                res.cookie('token', token, {
-                    httpOnly: true,
-                    maxAge: 24 * 60 * 60 * 1000 //token stay till 24h
-                });
+        const isPassowordMatched = await user.ComparePassword(password);
+        if (user && isPassowordMatched) {
+            const token = generateToken(user._id);
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: "None",
+                maxAge: 24 * 60 * 60 * 1000 //token stay till 24h
+            });
 
-                res.status(200).json({
-                    token,
-                    user: {
-                        _id: user._id,
-                        email: user.email,
-                        fullname: {
-                            firstname: user.fullname.firstname,
-                            lastname: user.fullname.lastname,
-                        },
-                        isAdmin: user.isAdmin
-                    }
-                });
-            } else {
-                res.status(401).json('Invalid email or password');
-            
+            res.status(200).json({
+                token,
+                user: {
+                    _id: user._id,
+                    email: user.email,
+                    fullname: {
+                        firstname: user.fullname.firstname,
+                        lastname: user.fullname.lastname,
+                    },
+                    isAdmin: user.isAdmin
+                }
+            });
+        } else {
+            res.status(401).json('Invalid email or password');
+
         }
     } catch (error) {
         console.error(error.message);

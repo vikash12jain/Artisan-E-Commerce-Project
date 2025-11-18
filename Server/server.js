@@ -14,14 +14,13 @@ const app = express();
 
 app.use(express.json()); 
 app.use(bodyParser.json());
-app.use(cookieParser()); 
-const clientOrigin =process.env.CLIENT_ORIGIN || '*';
+app.use(cookieParser());
  
 
 
 app.use(
   cors({
-    origin: clientOrigin,
+    origin: ["https://your-netlify-site.netlify.app","http://localhost:5173"],
     credentials: true,
   })
 );

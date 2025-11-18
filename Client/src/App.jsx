@@ -3,7 +3,7 @@ import './App.css'
 import ProfilePage from '../Pages/Profile'
 
 const API_BASE = import.meta.env.VITE_API_URL;
-
+// cancel ignore
 const ToastAlert = ({ message }) => {
     if (!message) return null;
     return (
@@ -14,7 +14,7 @@ const ToastAlert = ({ message }) => {
         </div>
     );
 };
-
+// cancel ignore
 const GlobalLoading = ({ active }) => {
     if (!active) return null;
     return (
@@ -30,7 +30,7 @@ const GlobalLoading = ({ active }) => {
     );
 };
 
-
+// done copy
 const ProductCard = ({ product, addToCart, onOpen, isBusy }) => {
     const key = `addToCart-${product._id}`;
     const busy = !!(isBusy && isBusy(key));
@@ -41,7 +41,7 @@ const ProductCard = ({ product, addToCart, onOpen, isBusy }) => {
                 className="w-full h-40 sm:h-64 overflow-hidden cursor-pointer flex items-center"
                 onClick={() => onOpen && onOpen(product._id)}
             >
-               <img src={ product.image || `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(product.name || "Product")}` } alt={product.name} className="w-full h-full object-contain sm:object-cover object-center" />
+                <img src={product.image || `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(product.name || "Product")}`} alt={product.name} className="w-full h-full object-contain sm:object-cover object-center" />
 
             </div>
             <div className="p-4">
@@ -65,9 +65,8 @@ const ProductCard = ({ product, addToCart, onOpen, isBusy }) => {
         </div>
     );
 }
-
-
-const SearchModal = ({ products, onClose,onOpen }) => {
+// done copy
+const SearchModal = ({ products, onClose, onOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => { document.body.style.overflow = 'hidden'; const onKey = (e) => { if (e.key === 'Escape') onClose(); }; window.addEventListener('keydown', onKey); return () => { document.body.style.overflow = 'auto'; window.removeEventListener('keydown', onKey); }; }, []);
@@ -131,7 +130,7 @@ const SearchModal = ({ products, onClose,onOpen }) => {
         </div>
     );
 };
-
+// Done copy......
 const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, isBusy, setIsSearchModalOpen }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
@@ -219,7 +218,7 @@ const HomePage = ({ products, isLoading, toastMessage, handleAddToCart, onOpen, 
         </main>
     );
 };
-
+// Done copy......
 const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart, goBack = () => window.history.back(), user, isBusy }) => {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [candidate, setCandidate] = useState(null);
@@ -237,7 +236,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
             setConfirmClearOpen(false);
         } catch (err) {
             console.error('Clear cart failed', err);
-            
+
         } finally {
             setIsClearing(false);
         }
@@ -307,89 +306,89 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-4">
-                       {cart.map(item => (
-  <div key={item._id} className="flex flex-col sm:flex-row items-start bg-white p-4 rounded-xl shadow-sm">
-    
-    <div className="w-4/5 sm:w-24 h-48 sm:h-24 flex-shrink-0 mr-8 sm:mr-4 mx-auto sm:mx-0">
-      <img
-        src={
-          item.image ||
-          `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(item.name || "Product")}`
-        }
-        alt={item.name}
-        className="w-full h-full object-cover rounded-md"
-      />
-    </div>
-    <div className="flex-1 w-full mt-3 sm:mt-0 text-center sm:text-left">
-      <h3 className="font-semibold text-base sm:text-lg leading-snug">{item.name}</h3>
-      <p className="text-gray-500 hidden sm:block mt-2">₹{item.price.toFixed(2)}</p>
-    </div>
-    <div className="hidden sm:flex items-center space-x-2 ml-3">
-      <button
-        onClick={() => { if (item.quantity > 1) updateQuantity(item._id, -1); }}
-        disabled={Number(item.quantity) <= 1}
-        title={Number(item.quantity) <= 1 ? "Minimum quantity reached. Use Remove to delete." : "Decrease quantity"}
-        className={`w-8 h-8 rounded-full transition-all ${Number(item.quantity) <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-        aria-label={Number(item.quantity) <= 1 ? "Minimum quantity" : "Decrease quantity"}
-      >
-        -
-      </button>
-      <span className="font-bold">{item.quantity}</span>
-      <button
-        onClick={() => updateQuantity(item._id, 1)}
-        title="Increase quantity"
-        className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
-        aria-label="Increase quantity"
-      >
-        +
-      </button>
+                        {cart.map(item => (
+                            <div key={item._id} className="flex flex-col sm:flex-row items-start bg-white p-4 rounded-xl shadow-sm">
 
-      <button
-        onClick={() => openConfirm(item)}
-        className="ml-4 text-red-500 hover:text-red-700"
-        aria-label={`Remove ${item.name} from cart`}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-      </button>
-    </div>
-    <div className="flex sm:hidden w-full items-center justify-between mt-3">
-      <div className="font-semibold text-gray-800">₹{item.price.toFixed(2)}</div>
+                                <div className="w-4/5 sm:w-24 h-48 sm:h-24 flex-shrink-0 mr-8 sm:mr-4 mx-auto sm:mx-0">
+                                    <img
+                                        src={
+                                            item.image ||
+                                            `https://placehold.co/600x600/a855f7/ffffff?text=${encodeURIComponent(item.name || "Product")}`
+                                        }
+                                        alt={item.name}
+                                        className="w-full h-full object-cover rounded-md"
+                                    />
+                                </div>
+                                <div className="flex-1 w-full mt-3 sm:mt-0 text-center sm:text-left">
+                                    <h3 className="font-semibold text-base sm:text-lg leading-snug">{item.name}</h3>
+                                    <p className="text-gray-500 hidden sm:block mt-2">₹{item.price.toFixed(2)}</p>
+                                </div>
+                                <div className="hidden sm:flex items-center space-x-2 ml-3">
+                                    <button
+                                        onClick={() => { if (item.quantity > 1) updateQuantity(item._id, -1); }}
+                                        disabled={Number(item.quantity) <= 1}
+                                        title={Number(item.quantity) <= 1 ? "Minimum quantity reached. Use Remove to delete." : "Decrease quantity"}
+                                        className={`w-8 h-8 rounded-full transition-all ${Number(item.quantity) <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                        aria-label={Number(item.quantity) <= 1 ? "Minimum quantity" : "Decrease quantity"}
+                                    >
+                                        -
+                                    </button>
+                                    <span className="font-bold">{item.quantity}</span>
+                                    <button
+                                        onClick={() => updateQuantity(item._id, 1)}
+                                        title="Increase quantity"
+                                        className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                        aria-label="Increase quantity"
+                                    >
+                                        +
+                                    </button>
 
-      <div className="flex items-center space-x-2">
-        <button
-          onClick={() => { if (item.quantity > 1) updateQuantity(item._id, -1); }}
-          disabled={Number(item.quantity) <= 1}
-          title={Number(item.quantity) <= 1 ? "Minimum quantity reached. Use Remove to delete." : "Decrease quantity"}
-          className={`w-8 h-8 rounded-full transition-all ${Number(item.quantity) <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-          aria-label={Number(item.quantity) <= 1 ? "Minimum quantity" : "Decrease quantity"}
-        >
-          -
-        </button>
-        <span className="font-bold">{item.quantity}</span>
-        <button
-          onClick={() => updateQuantity(item._id, 1)}
-          title="Increase quantity"
-          className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
-          aria-label="Increase quantity"
-        >
-          +
-        </button>
-      </div>
+                                    <button
+                                        onClick={() => openConfirm(item)}
+                                        className="ml-4 text-red-500 hover:text-red-700"
+                                        aria-label={`Remove ${item.name} from cart`}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="flex sm:hidden w-full items-center justify-between mt-3">
+                                    <div className="font-semibold text-gray-800">₹{item.price.toFixed(2)}</div>
 
-      <button
-        onClick={() => openConfirm(item)}
-        className="text-red-500 hover:text-red-700 p-1"
-        aria-label={`Remove ${item.name} from cart`}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
-      </button>
-    </div>
-  </div>
-))}
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            onClick={() => { if (item.quantity > 1) updateQuantity(item._id, -1); }}
+                                            disabled={Number(item.quantity) <= 1}
+                                            title={Number(item.quantity) <= 1 ? "Minimum quantity reached. Use Remove to delete." : "Decrease quantity"}
+                                            className={`w-8 h-8 rounded-full transition-all ${Number(item.quantity) <= 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                            aria-label={Number(item.quantity) <= 1 ? "Minimum quantity" : "Decrease quantity"}
+                                        >
+                                            -
+                                        </button>
+                                        <span className="font-bold">{item.quantity}</span>
+                                        <button
+                                            onClick={() => updateQuantity(item._id, 1)}
+                                            title="Increase quantity"
+                                            className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                            aria-label="Increase quantity"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+
+                                    <button
+                                        onClick={() => openConfirm(item)}
+                                        className="text-red-500 hover:text-red-700 p-1"
+                                        aria-label={`Remove ${item.name} from cart`}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
 
                     </div>
 
@@ -515,8 +514,7 @@ const CartPage = ({ cart, setCurrentPage, updateQuantity, removeItem, clearCart,
         </main>
     );
 };
-
-
+// Done copy......
 const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back(), handleCheckout, isBusy }) => {
     const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -525,8 +523,8 @@ const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back
         event.preventDefault();
         setIsPlacingOrder(true);
         try {
-           
-            await handleCheckout({}); 
+
+            await handleCheckout({});
             setOrderPlaced(true);
             setIsPlacingOrder(false);
         } catch (err) {
@@ -610,7 +608,7 @@ const CheckoutPage = ({ cart, setCurrentPage, goBack = () => window.history.back
         </main>
     );
 };
-
+// Done copy......
 const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, apiFetch, isBusy }) => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -700,8 +698,9 @@ const LoginPage = ({ setCurrentPage, setAuthError, setUser, setAuthToken, apiFet
             </div>
         </main>
     );
+    // Done copy......
 };
-
+// Done copy......
 const RegisterPage = ({ setCurrentPage, setAuthError, setUser, apiFetch, setAuthToken, isBusy }) => {
     const [fullName, setFullName] = useState({ firstname: "", lastname: "" });
     const [email, setEmail] = useState("");
@@ -731,12 +730,12 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, apiFetch, setAuth
             setCurrentPage("home");
         } catch (error) {
             if (error.response && error.response.data) {
-               
+
                 setAuthError(error.response.data.message);
                 console.log("remove : error.response.data.message");
                 console.error("Registration failed:", error.response.data.message);
             } else {
-              
+
                 setAuthError(error.message);
                 console.log("remove 444: error.message");
                 console.error("Registration failed:", error.message);
@@ -844,9 +843,7 @@ const RegisterPage = ({ setCurrentPage, setAuthError, setUser, apiFetch, setAuth
         </main>
     );
 };
-
-
-
+// Done copy......
 const AdminDashboardPage = ({ products: propProducts, goBack = () => window.history.back(), setProducts: setPropProducts, setCurrentPage, apiFetch, isBusy }) => {
 
     const [localProducts, setLocalProducts] = useState(propProducts || []);
@@ -1170,7 +1167,7 @@ const AdminDashboardPage = ({ products: propProducts, goBack = () => window.hist
         </main>
     );
 };
-
+// Done copy......
 function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = () => window.history.back(), setCurrentPage, user, apiFetch, isBusy }) {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -1281,7 +1278,7 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
                             title={!inStock ? 'Available soon' : 'Buy now'}
                             className={`py-2 bg-yellow-300 px-5 border rounded-full w-full sm:w-1/6 transition-colors focus:outline-none ${!inStock
                                 ? 'opacity-50 cursor-not-allowed border-gray-300 text-gray-500'
-                                : 'hover:bg-gray-100' 
+                                : 'hover:bg-gray-100'
                                 }`}
                         >
                             {!inStock ? 'Available soon' : 'Buy Now'}
@@ -1300,6 +1297,8 @@ function ProductDetail({ id, addToCart, handleAddToCart, toastMessage, goBack = 
 }
 
 const App = () => {
+    // **************************************************copy completed************************************************************************************************
+
     const [currentPage, setCurrentPage] = useState('home');
     const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -1343,7 +1342,7 @@ const App = () => {
                 const token = localStorage.getItem('authToken') || authToken;
                 if (token) headers.Authorization = `Bearer ${token}`;
 
-                const res = await fetch(`${API_BASE}${path}`, { credentials: options.credentials ?? 'include', ...options, headers });
+                const res = await fetch(`${API_BASE}${path}`, { credentials:'include', ...options, headers });
 
                 if (res.status === 401) {
                     localStorage.removeItem('authToken');
@@ -1381,8 +1380,6 @@ const App = () => {
 
         return requestPromise;
     };
-
-
 
 
     useEffect(() => {
@@ -1695,7 +1692,7 @@ const App = () => {
     const clearCart = async () => {
         if (!user) {
             setCart([]);
-            try { localStorage.removeItem('cart'); } catch (e) { console.error(e)}
+            try { localStorage.removeItem('cart'); } catch (e) { console.error(e) }
             return;
         }
         try {
@@ -1772,10 +1769,11 @@ const App = () => {
             throw err;
         }
     };
+    // **************************************************copy completed************************************************************************************************
 
 
 
-
+// cancel :Ignore
     const renderPage = () => {
         switch (currentPage) {
             case 'home':
@@ -1803,6 +1801,7 @@ const App = () => {
     };
 
     return (
+        // Done copy
         <div className=" hide-scrollbar min-h-screen flex flex-col font-sans">
             <ToastAlert message={toastMessage} />
             <GlobalLoading active={anyBusy} />
@@ -1810,7 +1809,7 @@ const App = () => {
                 <div className="container mx-auto px-4 sm:px-6 flex justify-between items-center py-4">
                     <a href="#" onClick={() => setCurrentPage('home')} className="text-amber-100 text-xl sm:text-2xl font-serif font-bold tracking-widest">ARTISAN</a>
                     <nav className='flex items-center space-x-6'>
-                      
+
                         <div className="flex items-center gap-2 md:hidden">
                             <button onClick={() => setCurrentPage('cart')} className="text-amber-100 p-2 rounded focus:outline-none relative" aria-label="Open cart">
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.198 1.704.707 1.704H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
@@ -1863,27 +1862,27 @@ const App = () => {
                             </li>
                         </ul>
                     </nav>
-                   {mobileMenuOpen && (
-  <>
-    <div className="fixed inset-0 z-40" onClick={() => setMobileMenuOpen(false)} />
-    <div className="md:hidden absolute top-full right-4 mt-2 bg-stone-800 rounded-lg shadow-lg z-50 w-56" role="dialog" aria-modal="true">
-      <ul className="flex flex-col p-3 space-y-2 text-amber-100">
-        <li>
-          <button onClick={() => { setCurrentPage('home'); setMobileMenuOpen(false); document.getElementById('Product-section')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-left w-full">Shop</button>
-        </li>
-        {user ? (
-          <>
-            {user.isAdmin && <li><button onClick={() => { setCurrentPage('admin-dashboard'); setMobileMenuOpen(false); }} className="text-left w-full">Admin</button></li>}
-            <li><button onClick={() => { setCurrentPage('profile'); setMobileMenuOpen(false); }} className="text-left w-full">Profile</button></li>
-          </>
-        ) : (
-          <li><button onClick={() => { setCurrentPage('login'); setMobileMenuOpen(false); }} className="text-left w-full">Login</button></li>
-        )}
-        <li><button onClick={() => { setCurrentPage('cart'); setMobileMenuOpen(false); }} className="text-left w-full">Cart ({cart.length})</button></li>
-      </ul>
-    </div>
-  </>
-)}
+                    {mobileMenuOpen && (
+                        <>
+                            <div className="fixed inset-0 z-40" onClick={() => setMobileMenuOpen(false)} />
+                            <div className="md:hidden absolute top-full right-4 mt-2 bg-stone-800 rounded-lg shadow-lg z-50 w-56" role="dialog" aria-modal="true">
+                                <ul className="flex flex-col p-3 space-y-2 text-amber-100">
+                                    <li>
+                                        <button onClick={() => { setCurrentPage('home'); setMobileMenuOpen(false); document.getElementById('Product-section')?.scrollIntoView({ behavior: 'smooth' }); }} className="text-left w-full">Shop</button>
+                                    </li>
+                                    {user ? (
+                                        <>
+                                            {user.isAdmin && <li><button onClick={() => { setCurrentPage('admin-dashboard'); setMobileMenuOpen(false); }} className="text-left w-full">Admin</button></li>}
+                                            <li><button onClick={() => { setCurrentPage('profile'); setMobileMenuOpen(false); }} className="text-left w-full">Profile</button></li>
+                                        </>
+                                    ) : (
+                                        <li><button onClick={() => { setCurrentPage('login'); setMobileMenuOpen(false); }} className="text-left w-full">Login</button></li>
+                                    )}
+                                    <li><button onClick={() => { setCurrentPage('cart'); setMobileMenuOpen(false); }} className="text-left w-full">Cart ({cart.length})</button></li>
+                                </ul>
+                            </div>
+                        </>
+                    )}
 
 
                 </div>
